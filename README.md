@@ -24,7 +24,7 @@ db.execute("UPDATE films SET title='Some2016Film' WHERE year='2016'")
 db.execute("DELETE FROM films WHERE year='2016'")  
 ```
 ### Exceptions
-Here we should use Base Exceptions Class to catch all exceptions (or read [it](https://docs.sqlalchemy.org/en/14/core/exceptions.html) for all kinds of excepetions).
+Here we should use Base Exceptions Class to catch all exceptions (or read [it](https://docs.sqlalchemy.org/en/14/core/exceptions.html) for all kinds of excepetions).<br/>
 Example:
 ```python
 from sqlalchemy import exc
