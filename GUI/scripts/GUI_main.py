@@ -22,6 +22,8 @@ class SQLTreeView(ttk.Treeview):
         self.popup_menu = tk.Menu(self, tearoff=0)
         self.popup_menu.add_command(label='Выбрать все',
                                     command=self.select_all)
+        self.popup_menu.add_command(label='Снять выделение',
+                                    command=self.deselect)
         self.popup_menu.add_command(label='Добавить',
                                     command=self.create_record)
         self.popup_menu.add_command(label='Удалить',
@@ -46,6 +48,11 @@ class SQLTreeView(ttk.Treeview):
         """ Selects all lines in the treeview """
 
         self.selection_set(tuple(self.get_children()))
+
+    def deselect(self, event=None):
+        """ Remove selection """
+
+        [self.selection_remove(item) for item in self.selection()]
 
     def read_records(self):
         """ Loads all records from DB into the treeview """
@@ -153,7 +160,13 @@ class SQLNotebook(ttk.Notebook):
 
         self.tabs_tables[self.index(self.select())].delete_records()
 
+    def reset_records(self):
+        """ Call read_records() of a currently selected table """
+
+        self.tabs_tables[self.index(self.select())].read_records()
+
     def on_tab_change(self, event):
+        # TODO remove this ???
         # this may be unnecessary because we can do the following
         # self.tabs_tables[self.index(self.select())] to get current tab
         # self.index(self.select()) to get current tab's index
@@ -224,6 +237,7 @@ class MainWindow(tk.Frame):
 
     def on_reset(self):
         print('on_reset')
+        self.nb_main.reset_records()
 
     def on_search(self):
         print('on_search')
@@ -270,7 +284,7 @@ class MainWindow(tk.Frame):
         employee_post = 'Кассир'
         if employee_post == 'Кассир':
             self.cashier_station = CashierDialog(self).show()
-            # print(self.cashier_station)
+            print(self.cashier_station)
 
 
 class ModalWindow(tk.Toplevel):
@@ -350,7 +364,7 @@ class CashierDialog(ModalWindow):
 
     def __init__(self, root):
         super().__init__(root)
-        self.retDict = {'direction': tk.StringVar(), 'station': tk.StringVar()}
+        self.ret_dict = {'direction': tk.StringVar(), 'station': tk.StringVar(), 'station_id': tk.StringVar()}
         self.init_pass()
         self.root.root.withdraw()
         self.protocol('WM_DELETE_WINDOW', self.on_exit)
@@ -363,19 +377,23 @@ class CashierDialog(ModalWindow):
         label_welcome = tk.Label(self, text='СДЕЛАТЬ КОМБОБОКСЫ')
         label_welcome.place(x=self.window_width // 2, y=40, anchor='center')
 
-        label_login = tk.Label(self, text='Направление:')
-        label_login.place(x=self.window_width//2, y=80, anchor='e')
+        label_direction = tk.Label(self, text='Направление:')
+        label_direction.place(x=self.window_width//2, y=80, anchor='e')
 
-        # TODO make this a combobox
-        self.entry_direction = tk.Entry(self, textvariable=self.retDict['direction'])
-        self.entry_direction.place(x=self.window_width//2, y=80, anchor='w')
+        directions = [item[0] for item in self.root.db.execute('SELECT name FROM directions;').fetchall()]
+        self.combo_direction = ttk.Combobox(self, values=directions, textvariable=self.ret_dict['direction'])
+        self.combo_direction.current(0)
+        self.combo_direction.place(x=self.window_width//2, y=80, anchor='w')
+        self.combo_direction.bind('<<ComboboxSelected>>', self.update_stations)
 
-        label_pass = tk.Label(self, text='Станция:')
-        label_pass.place(x=self.window_width//2, y=110, anchor='e')
+        label_station = tk.Label(self, text='Станция:')
+        label_station.place(x=self.window_width//2, y=110, anchor='e')
 
-        # TODO make this a combobox
-        self.entry_station = tk.Entry(self, textvariable=self.retDict['station'])
-        self.entry_station.place(x=self.window_width//2, y=110, anchor='w')
+        self.station_ids = []
+        self.station_names = []
+        self.combo_station = ttk.Combobox(self, values='', textvariable=self.ret_dict['station'])
+        self.combo_station.place(x=self.window_width//2, y=110, anchor='w')
+        self.update_stations()
 
         btn_signin = tk.Button(self, text='Подтвердить', command=self.on_submit)
         btn_signin.place(x=self.window_width*3//4, y=150, anchor='e')
@@ -384,7 +402,21 @@ class CashierDialog(ModalWindow):
         btn_exit = tk.Button(self, text='Отмена', command=self.on_exit)
         btn_exit.place(x=self.window_width * 3 // 4, y=150, anchor='w')
 
+    def update_stations(self, event=None):
+        self.station_ids.clear()
+        self.station_names.clear()
+        for item in self.root.db.execute(text('SELECT id, name FROM stations WHERE direction=:direction;'),
+                                         direction=self.ret_dict['direction'].get()).fetchall():
+            self.station_ids.append(item[0])
+            self.station_names.append(item[1])
+        self.combo_station['values'] = self.station_names
+        self.combo_station.set('')
+
     def on_submit(self, event=None):
+        if not self.ret_dict['direction'].get() or not self.ret_dict['station'].get():
+            messagebox.showerror(title='Ошибка', message='Поля не могут быть пустыми')
+            return
+        self.ret_dict['station_id'].set(self.station_ids[self.combo_station.current()])
         self.root.root.deiconify()
         self.destroy()
 
@@ -395,7 +427,7 @@ class CashierDialog(ModalWindow):
 
     def show(self):
         self.wait_window()
-        return {k: v.get() for k, v in self.retDict.items()}
+        return {k: v.get() for k, v in self.ret_dict.items()}
 
 
 if __name__ == '__main__':
