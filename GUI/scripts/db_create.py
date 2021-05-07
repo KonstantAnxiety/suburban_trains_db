@@ -1,14 +1,14 @@
-from GUI.scripts.db_config import db
+# from GUI.scripts.db_config import db
 
 CREATE_DATABASE = [
-    """CREATE TABLE posts (
+    """CREATE TABLE IF NOT EXISTS posts (
         post   VARCHAR(30) CONSTRAINT pk_posts PRIMARY KEY,
         salary NUMERIC(9, 2) NOT NULL,
             CONSTRAINT check_salary CHECK (SALARY >= 12000)
     );
     """,
 
-    """CREATE TABLE employees (
+    """CREATE TABLE IF NOT EXISTS employees (
         tabno      VARCHAR(30) CONSTRAINT pk_employees PRIMARY KEY,
         post       VARCHAR(30) CONSTRAINT ref_posts REFERENCES posts,
         full_name  VARCHAR(40) NOT NULL,
@@ -23,7 +23,7 @@ CREATE_DATABASE = [
     );
     """,
 
-    """CREATE TABLE directions (
+    """CREATE TABLE IF NOT EXISTS directions (
         name    VARCHAR(40) CONSTRAINT pk_directions PRIMARY KEY,
         dcost   NUMERIC(6, 2) NOT NULL,
             CONSTRAINT check_dcost CHECK (dcost > 0),
@@ -31,7 +31,7 @@ CREATE_DATABASE = [
     );
     """,
 
-    """ CREATE TABLE stations (
+    """ CREATE TABLE IF NOT EXISTS stations (
         id        NUMERIC(6) CONSTRAINT pk_stations PRIMARY KEY,
         name      VARCHAR(40) NOT NULL,
         sub_area  NUMERIC(2) NOT NULL,
@@ -40,14 +40,14 @@ CREATE_DATABASE = [
     );
     """,
 
-    """CREATE TABLE tariffs (
+    """CREATE TABLE IF NOT EXISTS tariffs (
         name VARCHAR(20) CONSTRAINT pk_tariffs PRIMARY KEY,
         coef NUMERIC(3, 2) NOT NULL,
             CONSTRAINT check_coef CHECK (coef > 0)
     );
     """,
 
-    """CREATE TABLE routes (
+    """CREATE TABLE IF NOT EXISTS routes (
         id     NUMERIC(6) CONSTRAINT pk_routes PRIMARY KEY,
         tariff VARCHAR(15) CONSTRAINT ref_route_tariff REFERENCES tariffs,
         wdays  VARCHAR(15) NOT NULL DEFAULT 'ежедневно',
@@ -59,7 +59,7 @@ CREATE_DATABASE = [
     );
     """,
 
-    """CREATE TABLE route_stations (
+    """CREATE TABLE IF NOT EXISTS route_stations (
         station     NUMERIC(6) CONSTRAINT ref_rout_st_st REFERENCES stations,
         route       NUMERIC(6) CONSTRAINT ref_rout_st_rout REFERENCES routes,
         arrive_time TIMESTAMP NOT NULL,
@@ -67,12 +67,12 @@ CREATE_DATABASE = [
     );
     """,
 
-    """CREATE TABLE train_models (
+    """CREATE TABLE IF NOT EXISTS train_models (
         models VARCHAR(20) CONSTRAINT pk_models PRIMARY KEY
     );
     """,
 
-    """CREATE TABLE trains (
+    """CREATE TABLE IF NOT EXISTS trains (
         id              NUMERIC(6) CONSTRAINT pk_trains PRIMARY KEY,
         model           VARCHAR(20) CONSTRAINT ref_models REFERENCES train_models,
         serv_start_date DATE NOT NULL,
@@ -80,7 +80,7 @@ CREATE_DATABASE = [
     );
     """,
 
-    """CREATE TABLE rides (
+    """CREATE TABLE IF NOT EXISTS rides (
         id        NUMERIC(6) CONSTRAINT pk_rides PRIMARY KEY,
         ddate     TIMESTAMP NOT NULL,
         route     NUMERIC(6) CONSTRAINT ref_route_ride REFERENCES routes,
@@ -89,7 +89,7 @@ CREATE_DATABASE = [
     );
     """,
 
-    """CREATE TABLE tickets (
+    """CREATE TABLE IF NOT EXISTS tickets (
         id           NUMERIC(6) CONSTRAINT pk_tickets PRIMARY KEY,
         cost         NUMERIC(6, 2) NOT NULL,
             CONSTRAINT check_cost CHECK (cost >= 0),
@@ -104,5 +104,5 @@ CREATE_DATABASE = [
     """
 ]
 
-for table in CREATE_DATABASE:
-    db.execute(table)
+# for table in CREATE_DATABASE:
+#     db.execute(table)

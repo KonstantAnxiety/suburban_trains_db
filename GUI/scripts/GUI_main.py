@@ -2,23 +2,34 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from sqlalchemy import create_engine
+from sqlalchemy.sql import text
+from db_create import CREATE_DATABASE
+from sqlalchemy import exc
 
 
-class TreeViewWithPopup(ttk.Treeview):
-    def __init__(self, root, *args, **kwargs):
-        super().__init__(self)
-        self.popup_menu = tk.Menu(self, tearoff=0)
-        self.popup_menu.add_command(label='Удалить',
-                                    command=self.deleteRecords)
-        self.popup_menu.add_command(label='Выбрать все',
-                                    command=self.selectAll)
-        self.popup_menu.add_command(label='Изменить',
-                                    command=self.modRecord)
-        self.popup_menu.add_command(label='Добавить',
-                                    command=self.addRecord)
-        self.bind('<Button-3>', self.popup)
+class SQLTreeView(ttk.Treeview):
+    def __init__(self, root, db, table, *args, **kwargs):
         self.root = root
-        self.globalCounter = 0
+        self.db = db
+        self.table = table
+        self.columns = list(self.db.execute(f'select * from {self.table} where false;').keys())
+        super().__init__(root, columns=self.columns, show='headings')
+        self.popup_menu = tk.Menu(self, tearoff=0)
+        self.popup_menu.add_command(label='Выбрать все',
+                                    command=self.select_all)
+        self.popup_menu.add_command(label='Добавить',
+                                    command=self.create_record)
+        self.popup_menu.add_command(label='Удалить',
+                                    command=self.delete_records)
+        self.popup_menu.add_command(label='Изменить',
+                                    command=self.update_record)
+        self.bind('<Button-3>', self.popup)
+
+        col_width = int((self.root.master.root.master.winfo_width() - 20) / len(self.columns))
+        for ind, col in enumerate(self.columns):
+            self.column(col, anchor=tk.CENTER, minwidth=10, width=col_width, stretch=False)
+            self.heading(col, text=self.columns[ind])
+        self.select_records()
 
     def popup(self, event):
         try:
@@ -26,15 +37,16 @@ class TreeViewWithPopup(ttk.Treeview):
         finally:
             self.popup_menu.grab_release()
 
-    def add(self, parent, values):
-        self.insert('', 'end', iid=self.globalCounter, values=values)
-        self.globalCounter += 1
-
-    def selectAll(self, event=None):
+    def select_all(self, event=None):
         self.selection_set(tuple(self.get_children()))
 
-    def addRecord(self):
-        print('addRecord')
+    def select_records(self):
+        records = self.db.execute(f'SELECT * FROM {self.table};').fetchall()
+        [self.delete(i) for i in self.get_children()]
+        [self.insert('', 'end', values=list(row)) for row in records]
+
+    def create_record(self):
+        print(f'{self.table}.create_record')
         # nb = self.master.master
         # nb = nb.index(nb.select())
         # dic = funcs.askValuesDialog(self.root, self.config, DB.db[nb].columns).show()
@@ -50,22 +62,8 @@ class TreeViewWithPopup(ttk.Treeview):
         #                      columns=keys), ignore_index=True)
         #     self.add('', values=values)
 
-    def deleteRecords(self, event=None):
-        print('deleteRecords')
-        # nb = self.master.master
-        # nb = nb.index(nb.select())
-        # selected = [int(i) for i in self.selection()]
-        # if not len(selected):
-        #     funcs.message(self.root, 'Не выбран элемент', msgtype='warning').fade()
-        # else:
-        #     DB.modified = True
-        #     for item in selected:
-        #         itemId = int(self.item(item)['values'][0])
-        #         DB.db[nb] = DB.db[nb].drop(DB.db[nb].index[DB.db[nb]['Код'] == itemId])
-        #         self.delete(self.selection()[0])
-
-    def modRecord(self):
-        print('modRecord')
+    def update_record(self):
+        print(f'{self.table}.update_record')
         # nb = self.master.master
         # nb = nb.index(nb.select())
         # selected = self.selection()
@@ -87,20 +85,52 @@ class TreeViewWithPopup(ttk.Treeview):
         #             self.item(selected, values=values)
         #             DB.db[nb].loc[itemId - 1, keys[i]] = values[i]
 
+    def delete_records(self, event=None):
+        print(f'{self.table}.delete_records')
+        for item in self.selection():
+            self.db.execute(text(f'DELETE FROM {self.table} WHERE {self.columns[0]} = :id'), id=self.set(item, '#1'))
+        self.select_records()
+
 
 class SQLNotebook(ttk.Notebook):
-    def __init__(self, root, views=None, headings=None, **kwargs):
+    def __init__(self, root, db, tables=None, headings=None, **kwargs):
         super().__init__(root, **kwargs)
         self.root = root
-        self.views = views
+        self.db = db
+        self.tables = tables
         self.headings = headings
-        self.tabs = [tk.Frame(self) for i in range(len(views))]
+        self.current_tab = None
+        self.current_tab_id = 0
+        self.tabs_frames = [tk.Frame(self, bg='green') for i in range(len(self.tables))]
+        self.tabs_tables = [SQLTreeView(tab_frame, self.db, table)
+                            for tab_frame, table in zip(self.tabs_frames, self.tables)]
+        for frame, table in zip(self.tabs_frames, self.tabs_tables):
+            frame.pack(expand=True, fill=tk.BOTH)
+            table.pack(expand=True, fill=tk.BOTH)
         self.init_notebook()
 
     def init_notebook(self):
-        for i, view, heading in zip(range(len(self.views)), self.views, self.headings):
-            self.add(self.tabs[i], padding=3)
+        for i, view, heading in zip(range(len(self.tables)), self.tables, self.headings):
+            self.add(self.tabs_frames[i], padding=3)
             self.tab(i, text=heading)
+        self.current_tab = self.index('current')
+        self.bind('<<NotebookTabChanged>>', self.on_tab_change)
+
+    def create_record(self):
+        self.tabs_tables[self.index(self.select())].create_record()
+
+    def update_record(self):
+        self.tabs_tables[self.index(self.select())].update_record()
+
+    def delete_record(self):
+        self.tabs_tables[self.index(self.select())].delete_records()
+
+    def on_tab_change(self, event):
+        # this may be unnecessary because we can do the following in SQLNotebook
+        # self.tabs_tables[self.index(self.select())] to get current tab
+        # self.index(self.select()) to get current tab's index
+        self.current_tab = event.widget.select()
+        self.current_tab_id = event.widget.index(self.current_tab)
 
 
 class MainWindow(tk.Frame):
@@ -134,25 +164,34 @@ class MainWindow(tk.Frame):
         self.btn_create.pack(side=tk.LEFT, padx=10, pady=10)
         self.btn_update.pack(side=tk.LEFT, padx=10, pady=10)
         self.btn_delete.pack(side=tk.LEFT, padx=10, pady=10)
-        self.btn_reset.pack(side=tk.RIGHT,  padx=10, pady=10)
+        self.btn_reset.pack(side=tk.RIGHT, padx=10, pady=10)
         self.btn_search.pack(side=tk.RIGHT, padx=10, pady=10)
 
-        self.nb_main = SQLNotebook(self.f_tabs, views=['foo', 'bar', 'baz'], headings=['11', '22', '33'])
-        self.nb_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
-
         self.f_btns.pack(expand=False, fill=tk.BOTH)
-        self.f_tabs.pack(expand=False, fill=tk.BOTH)
+        self.f_tabs.pack(expand=True, fill=tk.BOTH)
         # btn_edit_dialog = tk.Button(self, text='Тест', bg='#ffffff', bd=2, command=self.open_auth_dialog)
         # btn_edit_dialog.pack()
 
     def on_create(self):
         print('on_create')
+        self.nb_main.create_record()
+        # # exception example
+        # try:
+        #     self.db.execute("INSERT INTO stations VALUES(13, 'Мытищи', 3, 16.68, 'Ярославское')")
+        # except exc.SQLAlchemyError as err:
+        #     messagebox.showerror(title='Ошибка', message=err)
+        # try:
+        #     self.db.execute("INSERT INTO directions VALUES('asdf', 28, '123456')")
+        # except exc.SQLAlchemyError as err:
+        #     messagebox.showerror(title='Ошибка', message=err)
 
     def on_update(self):
         print('on_update')
+        self.nb_main.update_record()
 
     def on_delete(self):
         print('on_delete')
+        self.nb_main.delete_record()
 
     def on_reset(self):
         print('on_reset')
@@ -160,11 +199,19 @@ class MainWindow(tk.Frame):
     def on_search(self):
         print('on_search')
 
+    def configure_notebook(self):
+        tables = ['directions', 'stations']
+        self.nb_main = SQLNotebook(self.f_tabs, self.db, tables, headings=['Направления', 'Станции'])
+        self.nb_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
     def connect(self, logpass):
         # messagebox.showinfo(title='WOW', message=f'Login: {login}\nPassword: {password}')
         print(f'Login: {logpass["login"]}\nPassword: {logpass["password"]}')
         db_connect = f'postgresql://{logpass["login"]}:{logpass["password"]}@localhost:5432/suburban_trains'
-        # self.db = create_engine(db_connect)
+        self.db = create_engine(db_connect)
+        for table in CREATE_DATABASE:
+            self.db.execute(table)
+        self.configure_notebook()
 
     def open_auth_dialog(self):
         PassWindow(self)
