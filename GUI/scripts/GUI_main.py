@@ -16,27 +16,23 @@ class SQLTreeView(ttk.Treeview):
         self.root = root
         self.db = db
         self.table = table
+        self.select_columns = ', '.join([c for c in table['columns']])
         # this workaround allows us to get columns of a given table
         # FIXME be careful with sql injections when using f-strings
-        self.columns = list(self.db.execute(f'select * from {self.table} where false;').keys())
-        super().__init__(root, columns=self.columns, show='headings', **kwargs)
+        # self.columns = list(self.db.execute(f'select * from {self.table} where false;').keys())
+        super().__init__(root, columns=table['columns'], show='headings', **kwargs)
         self.popup_menu = tk.Menu(self, tearoff=0)
-        self.popup_menu.add_command(label='Выбрать все',
-                                    command=self.select_all)
-        self.popup_menu.add_command(label='Снять выделение',
-                                    command=self.deselect)
-        self.popup_menu.add_command(label='Добавить',
-                                    command=self.create_record)
-        self.popup_menu.add_command(label='Удалить',
-                                    command=self.delete_records)
-        self.popup_menu.add_command(label='Изменить',
-                                    command=self.update_record)
+        self.popup_menu.add_command(label='Выбрать все', command=self.select_all)
+        self.popup_menu.add_command(label='Снять выделение', command=self.deselect)
+        self.popup_menu.add_command(label='Добавить', command=self.create_record)
+        self.popup_menu.add_command(label='Удалить', command=self.delete_records)
+        self.popup_menu.add_command(label='Изменить', command=self.update_record)
         self.bind('<Button-3>', self.popup)
 
-        col_width = int((self.root.master.root.master.winfo_width() - 20) / len(self.columns))
-        for ind, col in enumerate(self.columns):
+        # col_width = int((self.root.master.root.master.winfo_width() - 20) / len(table['columns']))
+        for col, heading in zip(table['columns'], table['col_headings']):
             self.column(col, anchor=tk.CENTER, minwidth=10, stretch=False)
-            self.heading(col, text=self.columns[ind])
+            self.heading(col, text=heading)
         self.read_records()
 
     def popup(self, event):
@@ -58,7 +54,7 @@ class SQLTreeView(ttk.Treeview):
     def read_records(self):
         """ Loads all records from DB into the treeview """
 
-        records = self.db.execute(f'SELECT * FROM {self.table};').fetchall()
+        records = self.db.execute(f'SELECT {self.select_columns} FROM {self.table["name"]};').fetchall()
         [self.delete(i) for i in self.get_children()]
         [self.insert('', 'end', values=list(row)) for row in records]
 
@@ -107,24 +103,23 @@ class SQLTreeView(ttk.Treeview):
 
         print(f'{self.table}.delete_records')
         for item in self.selection():
-            self.db.execute(text(f'DELETE FROM {self.table} WHERE {self.columns[0]} = :id'), id=self.set(item, '#1'))
+            self.db.execute(text(f'DELETE FROM {self.table["name"]} WHERE {self.table["columns"][0]} = :id'), id=self.set(item, '#1'))
         self.read_records()
 
 
 class SQLNotebook(ttk.Notebook):
     """ ttk.Notebook that is able to interact with specific tables/views in a given DB """
 
-    def __init__(self, root, db, tables=None, headings=None, **kwargs):
+    def __init__(self, root, db, tables=None, **kwargs):
         super().__init__(root, **kwargs)
         self.root = root
         self.db = db
         self.tables = tables
-        self.headings = headings
         self.current_tab = None
         self.current_tab_id = 0
         self.tabs_frames = [tk.Frame(self) for i in range(len(self.tables))]
-        self.tabs_tables = [SQLTreeView(frame, self.db, table_name)
-                            for frame, table_name in zip(self.tabs_frames, self.tables)]
+        self.tabs_tables = [SQLTreeView(frame, self.db, table)
+                            for frame, table in zip(self.tabs_frames, tables)]
         for frame, table in zip(self.tabs_frames, self.tabs_tables):
             frame.pack(expand=True, fill=tk.BOTH)
 
@@ -140,9 +135,9 @@ class SQLNotebook(ttk.Notebook):
         self.init_notebook()
 
     def init_notebook(self):
-        for i, view, heading in zip(range(len(self.tables)), self.tables, self.headings):
+        for i, table in enumerate(self.tables):
             self.add(self.tabs_frames[i], padding=3)
-            self.tab(i, text=heading)
+            self.tab(i, text=table['heading'])
         self.current_tab = self.index('current')
         self.bind('<<NotebookTabChanged>>', self.on_tab_change)
 
@@ -249,7 +244,7 @@ class MainWindow(tk.Frame):
 
         # tables that will be accessible with the notebook
         tables = ['directions', 'stations']  # , 'active_staff']
-        self.nb_main = SQLNotebook(self.f_tabs, self.db, tables, headings=['Направления', 'Станции'])  #  , 'Активный штат'])
+        self.nb_main = SQLNotebook(self.f_tabs, self.db, post_tables[self.employee_post])
         self.nb_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
     def connect(self):
