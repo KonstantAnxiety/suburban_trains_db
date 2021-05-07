@@ -17,7 +17,7 @@ class SQLTreeView(ttk.Treeview):
         # this workaround allows us to get columns of a given table
         # FIXME be careful with sql injections when using f-strings
         self.columns = list(self.db.execute(f'select * from {self.table} where false;').keys())
-        super().__init__(root, columns=self.columns, show='headings')
+        super().__init__(root, columns=self.columns, show='headings', **kwargs)
         self.popup_menu = tk.Menu(self, tearoff=0)
         self.popup_menu.add_command(label='Выбрать все',
                                     command=self.select_all)
@@ -31,9 +31,9 @@ class SQLTreeView(ttk.Treeview):
 
         col_width = int((self.root.master.root.master.winfo_width() - 20) / len(self.columns))
         for ind, col in enumerate(self.columns):
-            self.column(col, anchor=tk.CENTER, minwidth=10, width=col_width, stretch=False)
+            self.column(col, anchor=tk.CENTER, minwidth=10, stretch=False)
             self.heading(col, text=self.columns[ind])
-        self.select_records()
+        self.read_records()
 
     def popup(self, event):
         try:
@@ -46,7 +46,7 @@ class SQLTreeView(ttk.Treeview):
 
         self.selection_set(tuple(self.get_children()))
 
-    def select_records(self):
+    def read_records(self):
         """ Loads all records from DB into the treeview """
 
         records = self.db.execute(f'SELECT * FROM {self.table};').fetchall()
@@ -99,7 +99,7 @@ class SQLTreeView(ttk.Treeview):
         print(f'{self.table}.delete_records')
         for item in self.selection():
             self.db.execute(text(f'DELETE FROM {self.table} WHERE {self.columns[0]} = :id'), id=self.set(item, '#1'))
-        self.select_records()
+        self.read_records()
 
 
 class SQLNotebook(ttk.Notebook):
@@ -114,11 +114,20 @@ class SQLNotebook(ttk.Notebook):
         self.current_tab = None
         self.current_tab_id = 0
         self.tabs_frames = [tk.Frame(self) for i in range(len(self.tables))]
-        self.tabs_tables = [SQLTreeView(tab_frame, self.db, table)
-                            for tab_frame, table in zip(self.tabs_frames, self.tables)]
+        self.tabs_tables = [SQLTreeView(frame, self.db, table_name)
+                            for frame, table_name in zip(self.tabs_frames, self.tables)]
         for frame, table in zip(self.tabs_frames, self.tabs_tables):
             frame.pack(expand=True, fill=tk.BOTH)
-            table.pack(expand=True, fill=tk.BOTH)
+
+            scroll_x = tk.Scrollbar(frame, orient='horizontal', command=table.xview)
+            scroll_x.pack(side=tk.BOTTOM, expand=False, fill=tk.BOTH)
+
+            table.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+
+            scroll_y = tk.Scrollbar(frame, command=table.yview)
+            scroll_y.pack(side=tk.RIGHT, expand=False, fill=tk.BOTH)
+
+            table.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
         self.init_notebook()
 
     def init_notebook(self):
@@ -164,6 +173,7 @@ class MainWindow(tk.Frame):
         logpass = AuthDialog(self).show()
         self.cashier_station = {'direction': None, 'station': None}
         self.connect(logpass)
+        self.configure_notebook()
 
     def init_main(self):
         self.root.title('Т Е С Т')
@@ -223,6 +233,7 @@ class MainWindow(tk.Frame):
     def configure_notebook(self):
         """ Create a SQLNotebook instance """
 
+        # tables that will be accessible with the notebook
         tables = ['directions', 'stations']
         self.nb_main = SQLNotebook(self.f_tabs, self.db, tables, headings=['Направления', 'Станции'])
         self.nb_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
@@ -250,7 +261,6 @@ class MainWindow(tk.Frame):
         if employee_post == 'Кассир':
             self.cashier_station = CashierDialog(self).show()
             print(self.cashier_station)
-        self.configure_notebook()
 
     def open_auth_dialog(self):
         """ Redundant ??? """
