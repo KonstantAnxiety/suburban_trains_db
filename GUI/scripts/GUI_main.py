@@ -14,6 +14,8 @@ class SQLTreeView(ttk.Treeview):
         self.root = root
         self.db = db
         self.table = table
+        # this workaround allows us to get columns of a given table
+        # FIXME be careful with sql injections when using f-strings
         self.columns = list(self.db.execute(f'select * from {self.table} where false;').keys())
         super().__init__(root, columns=self.columns, show='headings')
         self.popup_menu = tk.Menu(self, tearoff=0)
@@ -142,7 +144,7 @@ class SQLNotebook(ttk.Notebook):
         self.tabs_tables[self.index(self.select())].delete_records()
 
     def on_tab_change(self, event):
-        # this may be unnecessary because we can do the following in SQLNotebook
+        # this may be unnecessary because we can do the following
         # self.tabs_tables[self.index(self.select())] to get current tab
         # self.index(self.select()) to get current tab's index
         self.current_tab = event.widget.select()
@@ -159,7 +161,8 @@ class MainWindow(tk.Frame):
         self.window_width = 800
         self.window_height = 600
         self.init_main()
-        logpass = PassWindow(self).show()
+        logpass = AuthDialog(self).show()
+        self.cashier_station = {'direction': None, 'station': None}
         self.connect(logpass)
 
     def init_main(self):
@@ -171,7 +174,7 @@ class MainWindow(tk.Frame):
         self.root.geometry(f'{self.window_width}x{self.window_height}+{left}+{top}')
 
         self.f_btns = tk.Frame(height=self.window_height*1//8)
-        self.f_tabs = tk.Frame(height=self.window_height*7//8, bg='red')
+        self.f_tabs = tk.Frame(height=self.window_height*7//8)
 
         self.btn_create = tk.Button(self.f_btns, text='Добавить', width=10, command=self.on_create)
         self.btn_update = tk.Button(self.f_btns, text='Изменить', width=10, command=self.on_update)
@@ -219,6 +222,7 @@ class MainWindow(tk.Frame):
 
     def configure_notebook(self):
         """ Create a SQLNotebook instance """
+
         tables = ['directions', 'stations']
         self.nb_main = SQLNotebook(self.f_tabs, self.db, tables, headings=['Направления', 'Станции'])
         self.nb_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
@@ -232,11 +236,26 @@ class MainWindow(tk.Frame):
         self.db = create_engine(db_connect)
         for table in CREATE_DATABASE:
             self.db.execute(table)
+
+        try:
+            employee_post = self.db.execute(text('SELECT post FROM employees WHERE tabno=:login'), login=logpass['login'])
+        except exc.SQLAlchemyError as err:
+            messagebox.showerror(title='Ошибка', message=err)
+            self.destroy()
+        if logpass['login'] == 'postgres':
+            messagebox.showinfo(title='Welcome', message='Hi admin!')
+
+        # TODO this is for development only
+        employee_post = 'Кассир'
+        if employee_post == 'Кассир':
+            self.cashier_station = CashierDialog(self).show()
+            print(self.cashier_station)
         self.configure_notebook()
 
     def open_auth_dialog(self):
         """ Redundant ??? """
-        PassWindow(self)
+
+        AuthDialog(self)
 
 
 class ModalWindow(tk.Toplevel):
@@ -261,7 +280,7 @@ class ModalWindow(tk.Toplevel):
         self.focus_set()
 
 
-class PassWindow(ModalWindow):
+class AuthDialog(ModalWindow):
     """ Authorization window """
 
     def __init__(self, root):
@@ -288,6 +307,54 @@ class PassWindow(ModalWindow):
         self.entry_pass.place(x=self.window_width//2, y=110, anchor='w')
 
         btn_signin = tk.Button(self, text='Войти', command=self.on_submit)
+        btn_signin.place(x=self.window_width*3//4, y=150, anchor='e')
+        self.bind('<Return>', self.on_submit)
+
+        btn_exit = tk.Button(self, text='Отмена', command=self.on_exit)
+        btn_exit.place(x=self.window_width * 3 // 4, y=150, anchor='w')
+
+    def on_submit(self, event=None):
+        self.root.root.deiconify()
+        self.destroy()
+
+    def on_exit(self, event=None):
+        self.root.root.deiconify()
+        self.destroy()
+
+    def show(self):
+        self.wait_window()
+        return {k: v.get() for k, v in self.retDict.items()}
+
+
+class CashierDialog(ModalWindow):
+    """ Cashier dialog """
+
+    def __init__(self, root):
+        super().__init__(root)
+        self.retDict = {'direction': tk.StringVar(), 'station': tk.StringVar()}
+        self.init_pass()
+        self.root.root.withdraw()
+
+    def init_pass(self):
+        self.title('Кассир')
+        label_welcome = tk.Label(self, text='Выберите направление и станцию,\nна которой сегодня работаете')
+        label_welcome.place(x=self.window_width//2, y=20, anchor='center')
+
+        label_login = tk.Label(self, text='Направление:')
+        label_login.place(x=self.window_width//2, y=80, anchor='e')
+
+        # TODO make this a combobox
+        self.entry_direction = tk.Entry(self, textvariable=self.retDict['direction'])
+        self.entry_direction.place(x=self.window_width//2, y=80, anchor='w')
+
+        label_pass = tk.Label(self, text='Станция:')
+        label_pass.place(x=self.window_width//2, y=110, anchor='e')
+
+        # TODO make this a combobox
+        self.entry_station = tk.Entry(self, textvariable=self.retDict['station'])
+        self.entry_station.place(x=self.window_width//2, y=110, anchor='w')
+
+        btn_signin = tk.Button(self, text='Подтвердить', command=self.on_submit)
         btn_signin.place(x=self.window_width*3//4, y=150, anchor='e')
         self.bind('<Return>', self.on_submit)
 
