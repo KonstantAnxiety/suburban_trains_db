@@ -1,3 +1,4 @@
+import sys
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
@@ -170,9 +171,8 @@ class MainWindow(tk.Frame):
         self.window_width = 800
         self.window_height = 600
         self.init_main()
-        logpass = AuthDialog(self).show()
         self.cashier_station = {'direction': None, 'station': None}
-        self.connect(logpass)
+        self.connect()
         self.configure_notebook()
 
     def init_main(self):
@@ -200,8 +200,6 @@ class MainWindow(tk.Frame):
 
         self.f_btns.pack(expand=False, fill=tk.BOTH)
         self.f_tabs.pack(expand=True, fill=tk.BOTH)
-        # btn_edit_dialog = tk.Button(self, text='Тест', bg='#ffffff', bd=2, command=self.open_auth_dialog)
-        # btn_edit_dialog.pack()
 
     def on_create(self):
         print('on_create')
@@ -238,21 +236,33 @@ class MainWindow(tk.Frame):
         self.nb_main = SQLNotebook(self.f_tabs, self.db, tables, headings=['Направления', 'Станции'])
         self.nb_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
-    def connect(self, logpass):
+    def connect(self):
         """ Connect to a DB with the given logpass like {'login': str, 'password': str} """
 
-        # messagebox.showinfo(title='WOW', message=f'Login: {login}\nPassword: {password}')
-        print(f'Login: {logpass["login"]}\nPassword: {logpass["password"]}')
-        db_connect = f'postgresql://{logpass["login"]}:{logpass["password"]}@localhost:5432/suburban_trains'
-        self.db = create_engine(db_connect)
+        success = False
+        logpass = AuthDialog(self).show()
+        while not success:
+            try:
+                if not logpass:
+                    self.root.destroy()
+                    sys.exit()
+                db_connect = f'postgresql://{logpass["login"]}:{logpass["password"]}@localhost:5432/suburban_trains'
+                self.db = create_engine(db_connect)
+                self.db.connect()
+            except exc.SQLAlchemyError as err:
+                messagebox.showerror(title='Ошибка', message='Неверные данные для входа!')
+                logpass = AuthDialog(self).show()
+            else:
+                success = True
+
         for table in CREATE_DATABASE:
             self.db.execute(table)
 
-        try:
-            employee_post = self.db.execute(text('SELECT post FROM employees WHERE tabno=:login'), login=logpass['login'])
-        except exc.SQLAlchemyError as err:
-            messagebox.showerror(title='Ошибка', message=err)
-            self.destroy()
+        employee_post = self.db.execute(text('SELECT post FROM employees WHERE tabno=:login'), login=logpass['login'])
+        if employee_post.rowcount == 0:
+            messagebox.showerror(title='Ошибка', message='Работник не найден.')
+            # self.destroy()
+            # sys.exit()
         if logpass['login'] == 'postgres':
             messagebox.showinfo(title='Welcome', message='Hi admin!')
 
@@ -260,12 +270,7 @@ class MainWindow(tk.Frame):
         employee_post = 'Кассир'
         if employee_post == 'Кассир':
             self.cashier_station = CashierDialog(self).show()
-            print(self.cashier_station)
-
-    def open_auth_dialog(self):
-        """ Redundant ??? """
-
-        AuthDialog(self)
+            # print(self.cashier_station)
 
 
 class ModalWindow(tk.Toplevel):
@@ -298,6 +303,7 @@ class AuthDialog(ModalWindow):
         self.retDict = {'login': tk.StringVar(), 'password': tk.StringVar()}
         self.init_pass()
         self.root.root.withdraw()
+        self.protocol('WM_DELETE_WINDOW', self.on_exit)
 
     def init_pass(self):
         self.title('Авторизация')
@@ -328,11 +334,14 @@ class AuthDialog(ModalWindow):
         self.destroy()
 
     def on_exit(self, event=None):
+        self.retDict = None
         self.root.root.deiconify()
         self.destroy()
 
     def show(self):
         self.wait_window()
+        if not self.retDict:
+            return None
         return {k: v.get() for k, v in self.retDict.items()}
 
 
@@ -344,11 +353,15 @@ class CashierDialog(ModalWindow):
         self.retDict = {'direction': tk.StringVar(), 'station': tk.StringVar()}
         self.init_pass()
         self.root.root.withdraw()
+        self.protocol('WM_DELETE_WINDOW', self.on_exit)
 
     def init_pass(self):
         self.title('Кассир')
         label_welcome = tk.Label(self, text='Выберите направление и станцию,\nна которой сегодня работаете')
         label_welcome.place(x=self.window_width//2, y=20, anchor='center')
+
+        label_welcome = tk.Label(self, text='СДЕЛАТЬ КОМБОБОКСЫ')
+        label_welcome.place(x=self.window_width // 2, y=40, anchor='center')
 
         label_login = tk.Label(self, text='Направление:')
         label_login.place(x=self.window_width//2, y=80, anchor='e')
@@ -378,6 +391,7 @@ class CashierDialog(ModalWindow):
     def on_exit(self, event=None):
         self.root.root.deiconify()
         self.destroy()
+        sys.exit()
 
     def show(self):
         self.wait_window()
