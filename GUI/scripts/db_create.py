@@ -62,7 +62,7 @@ CREATE_DATABASE = [
     """CREATE TABLE IF NOT EXISTS route_stations (
         station     NUMERIC(6) CONSTRAINT ref_rout_st_st REFERENCES stations,
         route       NUMERIC(6) CONSTRAINT ref_rout_st_rout REFERENCES routes,
-        arrive_time TIMESTAMP NOT NULL,
+        arrive_time TIME WITHOUT TIME ZONE NOT NULL,
         PRIMARY KEY(station, route)
     );
     """,

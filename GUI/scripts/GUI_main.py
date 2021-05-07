@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.sql import text
 from db_create import CREATE_DATABASE
 from sqlalchemy import exc
+from auxiliary import post_tables
 
 
 class SQLTreeView(ttk.Treeview):
@@ -185,6 +186,7 @@ class MainWindow(tk.Frame):
         self.window_height = 600
         self.init_main()
         self.cashier_station = {'direction': None, 'station': None}
+        self.employee_post = None
         self.connect()
         self.configure_notebook()
 
@@ -246,8 +248,8 @@ class MainWindow(tk.Frame):
         """ Create a SQLNotebook instance """
 
         # tables that will be accessible with the notebook
-        tables = ['directions', 'stations']
-        self.nb_main = SQLNotebook(self.f_tabs, self.db, tables, headings=['Направления', 'Станции'])
+        tables = ['directions', 'stations']  # , 'active_staff']
+        self.nb_main = SQLNotebook(self.f_tabs, self.db, tables, headings=['Направления', 'Станции'])  #  , 'Активный штат'])
         self.nb_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
     def connect(self):
@@ -275,14 +277,12 @@ class MainWindow(tk.Frame):
         employee_post = self.db.execute(text('SELECT post FROM employees WHERE tabno=:login'), login=logpass['login'])
         if employee_post.rowcount == 0:
             messagebox.showerror(title='Ошибка', message='Работник не найден.')
-            # self.destroy()
-            # sys.exit()
+            self.destroy()
+            sys.exit()
         if logpass['login'] == 'postgres':
             messagebox.showinfo(title='Welcome', message='Hi admin!')
-
-        # TODO this is for development only
-        employee_post = 'Кассир'
-        if employee_post == 'Кассир':
+        self.employee_post = employee_post.fetchone()[0]
+        if self.employee_post == 'Кассир':
             self.cashier_station = CashierDialog(self).show()
             print(self.cashier_station)
 
@@ -373,9 +373,6 @@ class CashierDialog(ModalWindow):
         self.title('Кассир')
         label_welcome = tk.Label(self, text='Выберите направление и станцию,\nна которой сегодня работаете')
         label_welcome.place(x=self.window_width//2, y=20, anchor='center')
-
-        label_welcome = tk.Label(self, text='СДЕЛАТЬ КОМБОБОКСЫ')
-        label_welcome.place(x=self.window_width // 2, y=40, anchor='center')
 
         label_direction = tk.Label(self, text='Направление:')
         label_direction.place(x=self.window_width//2, y=80, anchor='e')
