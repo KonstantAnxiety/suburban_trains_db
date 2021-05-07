@@ -8,6 +8,8 @@ from sqlalchemy import exc
 
 
 class SQLTreeView(ttk.Treeview):
+    """ ttk.TreeView that is able to interact with a specific table/view in a given DB """
+
     def __init__(self, root, db, table, *args, **kwargs):
         self.root = root
         self.db = db
@@ -38,9 +40,13 @@ class SQLTreeView(ttk.Treeview):
             self.popup_menu.grab_release()
 
     def select_all(self, event=None):
+        """ Selects all lines in the treeview """
+
         self.selection_set(tuple(self.get_children()))
 
     def select_records(self):
+        """ Loads all records from DB into the treeview """
+
         records = self.db.execute(f'SELECT * FROM {self.table};').fetchall()
         [self.delete(i) for i in self.get_children()]
         [self.insert('', 'end', values=list(row)) for row in records]
@@ -86,6 +92,8 @@ class SQLTreeView(ttk.Treeview):
         #             DB.db[nb].loc[itemId - 1, keys[i]] = values[i]
 
     def delete_records(self, event=None):
+        """ Deletes selected records from the DB and refreshes the treeview """
+
         print(f'{self.table}.delete_records')
         for item in self.selection():
             self.db.execute(text(f'DELETE FROM {self.table} WHERE {self.columns[0]} = :id'), id=self.set(item, '#1'))
@@ -93,6 +101,8 @@ class SQLTreeView(ttk.Treeview):
 
 
 class SQLNotebook(ttk.Notebook):
+    """ ttk.Notebook that is able to interact with specific tables/views in a given DB """
+
     def __init__(self, root, db, tables=None, headings=None, **kwargs):
         super().__init__(root, **kwargs)
         self.root = root
@@ -101,7 +111,7 @@ class SQLNotebook(ttk.Notebook):
         self.headings = headings
         self.current_tab = None
         self.current_tab_id = 0
-        self.tabs_frames = [tk.Frame(self, bg='green') for i in range(len(self.tables))]
+        self.tabs_frames = [tk.Frame(self) for i in range(len(self.tables))]
         self.tabs_tables = [SQLTreeView(tab_frame, self.db, table)
                             for tab_frame, table in zip(self.tabs_frames, self.tables)]
         for frame, table in zip(self.tabs_frames, self.tabs_tables):
@@ -117,12 +127,18 @@ class SQLNotebook(ttk.Notebook):
         self.bind('<<NotebookTabChanged>>', self.on_tab_change)
 
     def create_record(self):
+        """ Call create_record() of a currently selected table """
+
         self.tabs_tables[self.index(self.select())].create_record()
 
     def update_record(self):
+        """ Call update_record() of a currently selected table """
+
         self.tabs_tables[self.index(self.select())].update_record()
 
-    def delete_record(self):
+    def delete_records(self):
+        """ Call delete_records() of a currently selected table """
+
         self.tabs_tables[self.index(self.select())].delete_records()
 
     def on_tab_change(self, event):
@@ -134,6 +150,8 @@ class SQLNotebook(ttk.Notebook):
 
 
 class MainWindow(tk.Frame):
+    """ Main window class with a SQLNotebook and some buttons """
+
     def __init__(self, root):
         super().__init__(root)
         self.root = root
@@ -191,7 +209,7 @@ class MainWindow(tk.Frame):
 
     def on_delete(self):
         print('on_delete')
-        self.nb_main.delete_record()
+        self.nb_main.delete_records()
 
     def on_reset(self):
         print('on_reset')
@@ -200,11 +218,14 @@ class MainWindow(tk.Frame):
         print('on_search')
 
     def configure_notebook(self):
+        """ Create a SQLNotebook instance """
         tables = ['directions', 'stations']
         self.nb_main = SQLNotebook(self.f_tabs, self.db, tables, headings=['Направления', 'Станции'])
         self.nb_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
 
     def connect(self, logpass):
+        """ Connect to a DB with the given logpass like {'login': str, 'password': str} """
+
         # messagebox.showinfo(title='WOW', message=f'Login: {login}\nPassword: {password}')
         print(f'Login: {logpass["login"]}\nPassword: {logpass["password"]}')
         db_connect = f'postgresql://{logpass["login"]}:{logpass["password"]}@localhost:5432/suburban_trains'
@@ -214,10 +235,13 @@ class MainWindow(tk.Frame):
         self.configure_notebook()
 
     def open_auth_dialog(self):
+        """ Redundant ??? """
         PassWindow(self)
 
 
 class ModalWindow(tk.Toplevel):
+    """ Base modal window class. Inherit from it to create other modal windows """
+
     def __init__(self, root):
         super().__init__(root)
         self.root = root
@@ -238,6 +262,8 @@ class ModalWindow(tk.Toplevel):
 
 
 class PassWindow(ModalWindow):
+    """ Authorization window """
+
     def __init__(self, root):
         super().__init__(root)
         self.retDict = {'login': tk.StringVar(), 'password': tk.StringVar()}
