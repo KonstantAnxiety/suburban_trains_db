@@ -60,6 +60,7 @@ class SQLTreeView(ttk.Treeview):
 
     def create_record(self):
         print(f'{self.table}.create_record')
+        AddDialog(self, self.table).show()
         # nb = self.master.master
         # nb = nb.index(nb.select())
         # dic = funcs.askValuesDialog(self.root, self.config, DB.db[nb].columns).show()
@@ -302,6 +303,64 @@ class ModalWindow(tk.Toplevel):
         self.resizable(False, False)
         self.grab_set()
         self.focus_set()
+
+
+class AddDialog(ModalWindow):
+    """ Window for change data """
+
+    def __init__(self, root, table):
+        super().__init__(root)
+        self.init_pass(table)
+        # self.root.root.withdraw()
+        self.protocol('WM_DELETE_WINDOW', self.on_exit)
+
+    def create_combobox(self, column, table, i):
+        self.Edits[i] = ttk.Combobox(self)
+        self.Edits[i]['values'] = [item[0] for item in self.root.db.execute(f"SELECT {column} FROM {table}").fetchall()]
+
+    def init_pass(self, table):
+        self.title('Введите значения')
+        x = str(self.root.winfo_screenwidth() // 2 - 150)
+        y = str(self.root.winfo_screenheight() // 2 - 200)
+        self.geometry('350x400+' + x + '+' + y)
+        self.Labels = [None] * len(table['columns'])
+        self.Edits = [None] * len(table['columns'])
+        self.retDict = dict()
+        for i in range(len(table['columns'])):
+            heading = table['col_headings'][i]
+            self.retDict[heading] = tk.StringVar()
+            editHeight = 0.8 * 400 / len(table['col_headings'])
+            self.Labels[i] = tk.Label(self, text=heading + ':', anchor='e')
+            self.Labels[i].place(relx=0.1, y=40 + i * editHeight, width=100)
+            if heading == 'Модель':
+                self.create_combobox('model', 'trains', i)
+            elif heading == 'Поезд':
+                self.create_combobox('id', 'trains', i)
+            elif heading == 'Номер маршрута':
+                self.create_combobox('id', 'routes', i)
+            elif heading == 'Направление':
+                self.create_combobox('name', 'directions', i)
+            elif heading == 'Пригородная зона':
+                self.create_combobox('', '', i)
+            else:
+                self.Edits[i] = tk.Entry(self,
+                                         textvariable=self.retDict[table['col_headings'][i]],
+                                         validate='key')
+            self.Edits[i].place(relx=0.5, y=40 + i * editHeight, width=100)
+        self.ok_button = tk.Button(self, text='OK', command=self.on_ok)
+        self.ok_button.place(relx=.5, rely=.9, relwidth=.4,
+                             height=30, anchor='c')
+        self.bind('<Return>', self.on_ok)
+
+    def on_exit(self, event=None):
+        self.retDict = None
+        self.destroy()
+
+    def on_ok(self, event=None):
+        self.on_exit()
+
+    def show(self):
+        self.wait_window()
 
 
 class AuthDialog(ModalWindow):
