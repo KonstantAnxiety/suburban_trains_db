@@ -53,7 +53,6 @@ class SQLTreeView(ttk.Treeview):
 
     def read_records(self):
         """ Loads all records from DB into the treeview """
-
         records = self.db.execute(f'SELECT {self.select_columns} FROM {self.table["name"]};').fetchall()
         [self.delete(i) for i in self.get_children()]
         [self.insert('', 'end', values=list(row)) for row in records]
@@ -103,8 +102,11 @@ class SQLTreeView(ttk.Treeview):
         """ Deletes selected records from the DB and refreshes the treeview """
 
         print(f'{self.table}.delete_records')
-        for item in self.selection():
-            self.db.execute(text(f'DELETE FROM {self.table["name"]} WHERE {self.table["columns"][0]} = :id'), id=self.set(item, '#1'))
+        try:
+            for item in self.selection():
+                self.db.execute(text(f'DELETE FROM {self.table["name"]} WHERE {self.table["columns"][0]} = :id'), id=self.set(item, '#1'))
+        except exc.SQLAlchemyError as err:
+            messagebox.showerror(title='Ошибка', message=err)
         self.read_records()
 
 
@@ -185,9 +187,9 @@ class MainWindow(tk.Frame):
         self.employee_post = None
         self.connect()
         self.configure_notebook()
+        self.root.title(self.employee_post)
 
     def init_main(self):
-        self.root.title('Т Е С Т')
         root_width = self.root.winfo_screenwidth()
         root_height = self.root.winfo_screenheight()
         left = (root_width - self.window_width) // 2
@@ -275,8 +277,6 @@ class MainWindow(tk.Frame):
             messagebox.showerror(title='Ошибка', message='Работник не найден.')
             self.destroy()
             sys.exit()
-        if logpass['login'] == 'postgres':
-            messagebox.showinfo(title='Welcome', message='Hi admin!')
         self.employee_post = employee_post.fetchone()[0]
         if self.employee_post == 'Кассир':
             self.cashier_station = CashierDialog(self).show()
