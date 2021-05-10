@@ -46,15 +46,15 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
-        # {
-        #     'name': 'active_trains',
-        #     'heading': 'Активные поезда',
-        #     'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
-        #     'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
-        #     'CREATE': False,
-        #     'UPDATE': False,
-        #     'DELETE': False
-        # },
+        {
+            'name': 'active_trains',
+            'heading': 'Активные поезда',
+            'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
+            'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
         # {
         #     'name': 'machinists',  # TODO Sure machinists? Not employees?
         #     'heading': 'Машинисты',
@@ -137,15 +137,15 @@ post_tables = {
         #     'UPDATE': True,
         #     'DELETE': True
         # },
-        # {
-        #     'name': 'workload',
-        #     'heading': 'Нагрузка машинистов',
-        #     'columns': ['route', 'full_name', 'ddate', 'train', ],
-        #     'col_headings': ['Номер маршрута', 'Дата', 'ФИО машиниста', 'Поезд'],
-        #     'CREATE': False,
-        #     'UPDATE': False,
-        #     'DELETE': False
-        # },
+        {
+            'name': 'machinist_workload',
+            'heading': 'Нагрузка машинистов',
+            'columns': ['rt_id', 'ddate', 'full_name', 'tr_id', ],
+            'col_headings': ['Номер маршрута', 'Дата', 'Машинист', 'Номер поезда'],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
     ],
     'Машинист': [
         # FIXME this will cause a crash unless the view is created and these lines are uncommented
@@ -178,37 +178,37 @@ post_tables = {
             'UPDATE': True,
             'DELETE': True
         },
-        # {
-        #     'name': 'active_trains',
-        #     'heading': 'Активные поезда',
-        #     'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
-        #     'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
-        #     'CREATE': True,
-        #     'UPDATE': True,
-        #     'DELETE': True
-        # },
-        # {
-        #     'name': 'machinists',  # TODO mb only active ? dunno
-        #     'heading': 'Машинисты',
-        #     'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
-        #                 'quit_date', ],
-        #     'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
-        #                      'Дата приема', 'Дата увольнения', ],
-        #     'CREATE': False,
-        #     'UPDATE': False,
-        #     'DELETE': False
-        # },
-        # {
-        #     'name': 'active_machinists',
-        #     'heading': 'Активные машинисты',
-        #     'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
-        #                 'quit_date', ],
-        #     'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
-        #                      'Дата приема', 'Дата увольнения', ],
-        #     'CREATE': False,
-        #     'UPDATE': False,
-        #     'DELETE': False
-        # },
+        {
+            'name': 'active_trains',
+            'heading': 'Активные поезда',
+            'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
+            'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
+            'CREATE': True,
+            'UPDATE': True,
+            'DELETE': True
+        },
+        {
+            'name': 'machinists',  # TODO mb only active ? dunno
+            'heading': 'Машинисты',
+            'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
+                        'quit_date', ],
+            'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
+                             'Дата приема', 'Дата увольнения', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
+        {
+            'name': 'active_machinists',
+            'heading': 'Активные машинисты',
+            'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
+                        'quit_date', ],
+            'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
+                             'Дата приема', 'Дата увольнения', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
     ],
     'Менеджер направлений': [
         {
@@ -220,37 +220,37 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
-        # {
-        #     'name': 'active_trains',
-        #     'heading': 'Активные поезда',
-        #     'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
-        #     'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
-        #     'CREATE': False,
-        #     'UPDATE': False,
-        #     'DELETE': False
-        # },
-        # {
-        #     'name': 'machinists',
-        #     'heading': 'Машинисты',
-        #     'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
-        #                 'quit_date', ],
-        #     'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
-        #                      'Дата приема', 'Дата увольнения', ],
-        #     'CREATE': False,
-        #     'UPDATE': False,
-        #     'DELETE': False
-        # },
-        # {
-        #     'name': 'active_machinists',
-        #     'heading': 'Активные машинисты',
-        #     'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
-        #                 'quit_date', ],
-        #     'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
-        #                      'Дата приема', 'Дата увольнения', ],
-        #     'CREATE': False,
-        #     'UPDATE': False,
-        #     'DELETE': False
-        # },
+        {
+            'name': 'active_trains',
+            'heading': 'Активные поезда',
+            'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
+            'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
+        {
+            'name': 'machinists',
+            'heading': 'Машинисты',
+            'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
+                        'quit_date', ],
+            'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
+                             'Дата приема', 'Дата увольнения', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
+        {
+            'name': 'active_machinists',
+            'heading': 'Активные машинисты',
+            'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
+                        'quit_date', ],
+            'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
+                             'Дата приема', 'Дата увольнения', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
         # {
         #     'name': 'routes_verbose',
         #     'heading': 'Маршруты',
