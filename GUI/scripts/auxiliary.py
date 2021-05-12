@@ -1,6 +1,3 @@
-# TODO create new needed views and implement the whole thing
-# TODO permission are needed to disable certain elements of the interface
-# TODO also need to create special views for all tables with foreign keys
 post_tables = {
     # format
     # Post name: [
@@ -29,8 +26,8 @@ post_tables = {
         {
             'name': 'tickets',
             'heading': 'Билеты',
-            'columns': ['payment_date', 'depart_st', 'arrive_st', 'tariff', 'round_trip', 'cashier', ],
-            'col_headings': ['Дата', 'Откуда', 'Куда', 'Тип', 'Туда-обратно', 'Кассир', ],
+            'columns': ['payment_date', 'depart_st', 'arrive_st', 'tariff', 'round_trip', 'cashier', 'cost', ],
+            'col_headings': ['Дата', 'Откуда', 'Куда', 'Тип', 'Туда-обратно', 'Кассир', 'Стоимость', ],
             'CREATE': True,
             'UPDATE': False,
             'DELETE': True
@@ -55,42 +52,42 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
-        # {
-        #     'name': 'machinists',  # TODO Sure machinists? Not employees?
-        #     'heading': 'Машинисты',
-        #     'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
-        #                 'quit_date', ],
-        #     'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
-        #                      'Дата приема', 'Дата увольнения', ],
-        #     'CREATE': False,
-        #     'UPDATE': False,
-        #     'DELETE': False
-        # },
-        # {
-        #     'name': 'active_machinists',  # TODO Sure machinists? Not employees?
-        #     'heading': 'Активные машинисты',
-        #     'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
-        #                 'quit_date', ],
-        #     'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
-        #                      'Дата приема', 'Дата увольнения', ],
-        #     'CREATE': False,
-        #     'UPDATE': False,
-        #     'DELETE': False
-        # },
-        # {
-        #     'name': 'manager_routes_verbose',
-        #     'heading': 'Маршруты',
-        #     'columns': ['id', 'tariff', 'wdays', 'way', 'stops', ],
-        #     'col_headings': ['Номер', 'Тип', 'Режим движения', 'Сторона', 'Остановки'],
-        #     'CREATE': True,
-        #     'UPDATE': True,
-        #     'DELETE': True
-        # },
+        {
+            'name': 'machinists',  # TODO Sure machinists? Not employees?
+            'heading': 'Машинисты',
+            'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
+                        'quit_date', ],
+            'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
+                             'Дата приема', 'Дата увольнения', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
+        {
+            'name': 'active_machinists',
+            'heading': 'Активные машинисты',
+            'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
+                        'quit_date', ],
+            'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
+                             'Дата приема', 'Дата увольнения', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
+        {
+            'name': 'manager_routes_verbose',
+            'heading': 'Маршруты',
+            'columns': ['id', 'tariff', 'wdays', 'way', 'stops', ],
+            'col_headings': ['Номер', 'Тип', 'Режим движения', 'Сторона', 'Остановки'],
+            'CREATE': True,
+            'UPDATE': True,
+            'DELETE': True
+        },
         {
             'name': 'rides',
             'heading': 'Рейсы',
-            'columns': ['ddate', 'route', 'train', ],
-            'col_headings': ['Дата', 'Номер маршрута', 'Поезд', ],
+            'columns': ['id', 'ddate', 'route', 'train', 'machinist'],
+            'col_headings': ['ID', 'Дата', 'Номер маршрута', 'Поезд', 'Машинист', ],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
@@ -118,6 +115,17 @@ post_tables = {
         {
             'name': 'employees',
             'heading': 'Сотрудники',
+            'columns': ['tabno', 'post', 'last_name', 'first_name', 'patronymic', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
+                        'quit_date', ],
+            'col_headings': ['Таб. номер', 'Должность', 'Фамилия', 'Имя', 'Отчество', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
+                             'Дата приема', 'Дата увольнения', ],
+            'CREATE': True,
+            'UPDATE': True,
+            'DELETE': True
+        },
+        {
+            'name': 'active_staff',
+            'heading': 'Активный штат',
             'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
                         'quit_date', ],
             'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
@@ -126,17 +134,6 @@ post_tables = {
             'UPDATE': True,
             'DELETE': True
         },
-        # {
-        #     'name': 'active_staff',
-        #     'heading': 'Активный штат',
-        #     'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
-        #                 'quit_date', ],
-        #     'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
-        #                      'Дата приема', 'Дата увольнения', ],
-        #     'CREATE': True,
-        #     'UPDATE': True,
-        #     'DELETE': True
-        # },
         {
             'name': 'machinist_workload',
             'heading': 'Нагрузка машинистов',
@@ -148,22 +145,22 @@ post_tables = {
         },
     ],
     'Машинист': [
-        # FIXME this will cause a crash unless the view is created and these lines are uncommented
-        # {
-        #     'name': 'machinist_rides',
-        #     'heading': 'Назначенные рейсы',
-        #     'columns': ['ddate', 'route', 'train', 'tariff', 'stops'],
-        #     'col_headings': ['Дата', 'Номер маршрута', 'Поезд', 'Тип', 'Остановки', ],
-        #     'CREATE': False,
-        #     'UPDATE': False,
-        #     'DELETE': False
-        # },
+        FIXME this will cause a crash unless the view is created and these lines are uncommented
+        {
+            'name': 'machinist_rides',
+            'heading': 'Назначенные рейсы',
+            'columns': ['ddate', 'route', 'train', 'tariff', 'stops'],
+            'col_headings': ['Дата', 'Номер маршрута', 'Поезд', 'Тип', 'Остановки', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
     ],
     'Директор депо': [
         {
             'name': 'train_models',
             'heading': 'Модели поездов',
-            'columns': ['models'],  # TODO model ?
+            'columns': ['model'],
             'col_headings': ['Модель', ],
             'CREATE': True,
             'UPDATE': True,
@@ -211,6 +208,24 @@ post_tables = {
         },
     ],
     'Менеджер направлений': [
+		{
+			'name': 'directions',
+            'heading': 'Направления',
+            'columns': ['name', 'dcost', 'manager', ],
+            'col_headings': ['Название', 'Базовая стоимость', 'Заведующий', ],
+            'CREATE': True,
+            'UPDATE': True,
+            'DELETE': True
+		}
+		{
+			'name': 'tariffs',
+            'heading': 'Тарифы',
+            'columns': ['name', 'coef', ],
+            'col_headings': ['Название', 'Множитель стоимости', ],
+            'CREATE': True,
+            'UPDATE': True,
+            'DELETE': True
+		}
         {
             'name': 'trains',
             'heading': 'Поезда',
@@ -251,15 +266,15 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
-        # {
-        #     'name': 'routes_verbose',
-        #     'heading': 'Маршруты',
-        #     'columns': ['id', 'tariff', 'wdays', 'way', 'stops', ],
-        #     'col_headings': ['Номер', 'Тип', 'Режим движения', 'Сторона', 'Остановки'],
-        #     'CREATE': True,
-        #     'UPDATE': True,
-        #     'DELETE': True
-        # },
+        {
+            'name': 'routes_verbose',
+            'heading': 'Маршруты',
+            'columns': ['id', 'tariff', 'wdays', 'way', 'stops', ],
+            'col_headings': ['Номер', 'Тип', 'Режим движения', 'Сторона', 'Остановки'],
+            'CREATE': True,
+            'UPDATE': True,
+            'DELETE': True
+        },
         {
             'name': 'rides',
             'heading': 'Рейсы',
