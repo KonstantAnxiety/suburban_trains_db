@@ -43,55 +43,55 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
-        {
-            'name': 'active_trains',
-            'heading': 'Активные поезда',
-            'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
-            'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
-            'CREATE': False,
-            'UPDATE': False,
-            'DELETE': False
-        },
-        {
-            'name': 'machinists',  # TODO Sure machinists? Not employees?
-            'heading': 'Машинисты',
-            'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
-                        'quit_date', ],
-            'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
-                             'Дата приема', 'Дата увольнения', ],
-            'CREATE': False,
-            'UPDATE': False,
-            'DELETE': False
-        },
-        {
-            'name': 'active_machinists',
-            'heading': 'Активные машинисты',
-            'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
-                        'quit_date', ],
-            'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
-                             'Дата приема', 'Дата увольнения', ],
-            'CREATE': False,
-            'UPDATE': False,
-            'DELETE': False
-        },
-        {
-            'name': 'manager_routes_verbose',
-            'heading': 'Маршруты',
-            'columns': ['id', 'tariff', 'wdays', 'way', 'stops', ],
-            'col_headings': ['Номер', 'Тип', 'Режим движения', 'Сторона', 'Остановки'],
-            'CREATE': True,
-            'UPDATE': True,
-            'DELETE': True
-        },
-        {
-            'name': 'rides',
-            'heading': 'Рейсы',
-            'columns': ['id', 'ddate', 'route', 'train', 'machinist'],
-            'col_headings': ['ID', 'Дата', 'Номер маршрута', 'Поезд', 'Машинист', ],
-            'CREATE': True,
-            'UPDATE': True,
-            'DELETE': True
-        },
+        # {
+        #     'name': 'active_trains',
+        #     'heading': 'Активные поезда',
+        #     'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
+        #     'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
+        #     'CREATE': False,
+        #     'UPDATE': False,
+        #     'DELETE': False
+        # },
+        # {
+        #     'name': 'machinists',  # TODO Sure machinists? Not employees?
+        #     'heading': 'Машинисты',
+        #     'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
+        #                 'quit_date', ],
+        #     'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
+        #                      'Дата приема', 'Дата увольнения', ],
+        #     'CREATE': False,
+        #     'UPDATE': False,
+        #     'DELETE': False
+        # },
+        # {
+        #     'name': 'active_machinists',
+        #     'heading': 'Активные машинисты',
+        #     'columns': ['tabno', 'post', 'full_name', 'passport', 'birth_date', 'sex', 'snils', 'inn', 'emp_date',
+        #                 'quit_date', ],
+        #     'col_headings': ['Таб. номер', 'Должность', 'ФИО', 'Паспорт', 'Дата рождения', 'Пол', 'СНИЛС', 'ИНН',
+        #                      'Дата приема', 'Дата увольнения', ],
+        #     'CREATE': False,
+        #     'UPDATE': False,
+        #     'DELETE': False
+        # },
+        # {
+        #     'name': 'manager_routes_verbose',
+        #     'heading': 'Маршруты',
+        #     'columns': ['id', 'tariff', 'wdays', 'way', 'stops', ],
+        #     'col_headings': ['Номер', 'Тип', 'Режим движения', 'Сторона', 'Остановки'],
+        #     'CREATE': True,
+        #     'UPDATE': True,
+        #     'DELETE': True
+        # },
+        # {
+        #     'name': 'manager_rides',
+        #     'heading': 'Рейсы',
+        #     'columns': ['id', 'ddate', 'route', 'train', 'machinist'],
+        #     'col_headings': ['ID', 'Дата', 'Номер маршрута', 'Поезд', 'Машинист', ],
+        #     'CREATE': True,
+        #     'UPDATE': True,
+        #     'DELETE': True
+        # },
         {
             'name': 'stations',
             'heading': 'Станции',
@@ -145,7 +145,7 @@ post_tables = {
         },
     ],
     'Машинист': [
-        FIXME this will cause a crash unless the view is created and these lines are uncommented
+        # FIXME this will cause a crash unless the view is created and these lines are uncommented
         {
             'name': 'machinist_rides',
             'heading': 'Назначенные рейсы',
@@ -208,24 +208,24 @@ post_tables = {
         },
     ],
     'Менеджер направлений': [
-		{
-			'name': 'directions',
+        {
+            'name': 'directions',
             'heading': 'Направления',
             'columns': ['name', 'dcost', 'manager', ],
             'col_headings': ['Название', 'Базовая стоимость', 'Заведующий', ],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
-		}
-		{
-			'name': 'tariffs',
+        },
+        {
+            'name': 'tariffs',
             'heading': 'Тарифы',
             'columns': ['name', 'coef', ],
             'col_headings': ['Название', 'Множитель стоимости', ],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
-		}
+        },
         {
             'name': 'trains',
             'heading': 'Поезда',

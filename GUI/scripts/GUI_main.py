@@ -165,12 +165,7 @@ class SQLNotebook(ttk.Notebook):
         self.tabs_tables[self.index(self.select())].read_records()
 
     def on_tab_change(self, event):
-        # TODO remove this ???
-        # this may be unnecessary because we can do the following
-        # self.tabs_tables[self.index(self.select())] to get current tab
-        # self.index(self.select()) to get current tab's index
-        self.current_tab = event.widget.select()
-        self.current_tab_id = event.widget.index(self.current_tab)
+        self.root.master.children['!mainwindow'].update_btns(self.tables[self.index(self.select())])
 
 
 class MainWindow(tk.Frame):
@@ -196,8 +191,8 @@ class MainWindow(tk.Frame):
         top = (root_height - self.window_height) // 2
         self.root.geometry(f'{self.window_width}x{self.window_height}+{left}+{top}')
 
-        self.f_btns = tk.Frame(height=self.window_height*1//8)
-        self.f_tabs = tk.Frame(height=self.window_height*7//8)
+        self.f_btns = tk.Frame(master=self.root, height=self.window_height*1//8)
+        self.f_tabs = tk.Frame(master=self.root, height=self.window_height*7//8)
 
         self.btn_create = tk.Button(self.f_btns, text='Добавить', width=10, command=self.on_create)
         self.btn_update = tk.Button(self.f_btns, text='Изменить', width=10, command=self.on_update)
@@ -205,14 +200,14 @@ class MainWindow(tk.Frame):
         self.btn_reset = tk.Button(self.f_btns, text='Сброс', width=10, command=self.on_reset)
         self.btn_search = tk.Button(self.f_btns, text='Поиск', width=10, command=self.on_search)
 
+        self.f_btns.pack(side=tk.TOP, expand=False, fill=tk.BOTH)
+        self.f_tabs.pack(side=tk.BOTTOM, expand=True, fill=tk.BOTH)
+
         self.btn_create.pack(side=tk.LEFT, padx=10, pady=10)
         self.btn_update.pack(side=tk.LEFT, padx=10, pady=10)
         self.btn_delete.pack(side=tk.LEFT, padx=10, pady=10)
         self.btn_reset.pack(side=tk.RIGHT, padx=10, pady=10)
         self.btn_search.pack(side=tk.RIGHT, padx=10, pady=10)
-
-        self.f_btns.pack(expand=False, fill=tk.BOTH)
-        self.f_tabs.pack(expand=True, fill=tk.BOTH)
 
     def on_create(self):
         print('on_create')
@@ -248,7 +243,13 @@ class MainWindow(tk.Frame):
         # tables that will be accessible with the notebook
         tables = ['directions', 'stations']  # , 'active_staff']
         self.nb_main = SQLNotebook(self.f_tabs, self.db, post_tables[self.employee_post])
-        self.nb_main.pack(side=tk.LEFT, expand=True, fill=tk.BOTH)
+        self.nb_main.pack(expand=True, fill=tk.BOTH)
+
+    def update_btns(self, permissions):
+        perm_map = {True: 'normal', False: 'disabled'}
+        self.btn_create['state'] = perm_map[permissions['CREATE']]
+        self.btn_update['state'] = perm_map[permissions['UPDATE']]
+        self.btn_delete['state'] = perm_map[permissions['DELETE']]
 
     def connect(self):
         """ Connect to a DB with the given logpass like {'login': str, 'password': str} """
