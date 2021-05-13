@@ -59,7 +59,7 @@ class SQLTreeView(ttk.Treeview):
 
     def create_record(self):
         print(f'{self.table}.create_record')
-        AddDialog(self, self.table).show()
+        CreateDialog(self, self.table).show()
         # nb = self.master.master
         # nb = nb.index(nb.select())
         # dic = funcs.askValuesDialog(self.root, self.config, DB.db[nb].columns).show()
@@ -305,8 +305,9 @@ class ModalWindow(tk.Toplevel):
         self.focus_set()
 
 
-class AddDialog(ModalWindow):
-    """ Window for change data """
+class CreateDialog(ModalWindow):
+    """ Window for add data """
+    """ Window for add data """
 
     def __init__(self, root, table):
         super().__init__(root)
@@ -322,7 +323,7 @@ class AddDialog(ModalWindow):
         self.title('Введите значения')
         x = str(self.root.winfo_screenwidth() // 2 - 150)
         y = str(self.root.winfo_screenheight() // 2 - 200)
-        self.geometry('350x400+' + x + '+' + y)
+        self.geometry('350x420+' + x + '+' + y)
         self.Labels = [None] * len(table['columns'])
         self.Edits = [None] * len(table['columns'])
         self.retDict = dict()
@@ -332,7 +333,7 @@ class AddDialog(ModalWindow):
             editHeight = 0.8 * 400 / len(table['col_headings'])
             self.Labels[i] = tk.Label(self, text=heading + ':', anchor='e')
             self.Labels[i].place(relx=0.1, y=40 + i * editHeight, width=100)
-            if heading == 'Модель':
+            if heading == 'Модель' and table['heading'] != 'Модели поездов':
                 self.create_combobox('model', 'trains', i)
             elif heading == 'Поезд':
                 self.create_combobox('id', 'trains', i)
@@ -340,8 +341,27 @@ class AddDialog(ModalWindow):
                 self.create_combobox('id', 'routes', i)
             elif heading == 'Направление':
                 self.create_combobox('name', 'directions', i)
-            elif heading == 'Пригородная зона':
-                self.create_combobox('', '', i)
+            # elif heading == 'Пригородная зона':
+            #     self.create_combobox('', '', i)
+            elif heading == 'Тип':
+                self.create_combobox('name', 'tariffs', i)
+            elif heading == 'Режим движения':
+                self.Edits[i] = ttk.Combobox(self)
+                self.Edits[i]['values'] = ['ежедневно', 'по рабочим', 'по выходным']
+            elif heading == 'Сторона':
+                self.Edits[i] = ttk.Combobox(self)
+                self.Edits[i]['values'] = ['в город', 'из города']
+            elif heading == 'Машинист':
+                self.create_combobox("tabno || ', ' || last_name || ' ' || first_name || ' ' || patronymic", 'machinists', i)
+            elif heading == 'Кассир':
+                self.create_combobox("tabno || ', ' || last_name || ' ' || first_name || ' ' || patronymic", 'cashiers', i)
+            elif heading == 'Туда-обратно':
+                self.Edits[i] = ttk.Combobox(self)
+                self.Edits[i]['values'] = ['да', 'нет']
+            elif heading in ('Название должности', 'Должность'):
+                self.create_combobox('post', 'posts', i)
+            elif heading == 'Заведующий':
+                self.create_combobox("tabno || ', ' || last_name || ' ' || first_name || ' ' || patronymic", 'route_managers', i)
             else:
                 self.Edits[i] = tk.Entry(self,
                                          textvariable=self.retDict[table['col_headings'][i]],
