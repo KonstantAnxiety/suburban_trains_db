@@ -101,6 +101,15 @@ post_tables = {
             'UPDATE': True,
             'DELETE': True
         },
+        {
+            'name': 'tickets_stat',
+            'heading': 'Статистика билетов',
+            'columns': ['tariff', 'amount', 'total', ],
+            'col_headings': ['Тариф', 'Количество', 'Общая выручка', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
     ],
     'Менеджер по персоналу': [
         {
@@ -139,6 +148,15 @@ post_tables = {
             'heading': 'Нагрузка машинистов',
             'columns': ['rt_id', 'ddate', 'machinist', 'tr_id', ],
             'col_headings': ['Номер маршрута', 'Дата', 'Машинист', 'Номер поезда'],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
+        {
+            'name': 'tickets_stat',
+            'heading': 'Статистика билетов',
+            'columns': ['tariff', 'amount', 'total', ],
+            'col_headings': ['Тариф', 'Количество', 'Общая выручка', ],
             'CREATE': False,
             'UPDATE': False,
             'DELETE': False
@@ -291,6 +309,15 @@ post_tables = {
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
+        },
+        {
+            'name': 'tickets_stat',
+            'heading': 'Статистика билетов',
+            'columns': ['tariff', 'amount', 'total', ],
+            'col_headings': ['Тариф', 'Количество', 'Общая выручка', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
         },
     ],
 }
