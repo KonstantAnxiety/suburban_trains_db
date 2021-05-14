@@ -315,6 +315,15 @@ class CreateDialog(ModalWindow):
         # self.root.root.withdraw()
         self.protocol('WM_DELETE_WINDOW', self.on_exit)
 
+    def on_cb_select(self, event):
+        selected_row = event.widget.get()
+        station = selected_row.split(', ')
+        place = self.Edits.index(event.widget)
+        self.Edits[place + 1]['values'] = \
+            [item[0] for item in self.root.db.execute(f"SELECT name FROM stations WHERE direction = "
+                                                      f"'{station[1]}' AND name != '{station[0]}'").fetchall()]
+
+
     def create_combobox(self, column, table, i):
         self.Edits[i] = ttk.Combobox(self)
         self.Edits[i]['values'] = [item[0] for item in self.root.db.execute(f"SELECT {column} FROM {table}").fetchall()]
@@ -332,7 +341,7 @@ class CreateDialog(ModalWindow):
             self.retDict[heading] = tk.StringVar()
             editHeight = 0.8 * 400 / len(table['col_headings'])
             self.Labels[i] = tk.Label(self, text=heading + ':', anchor='e')
-            self.Labels[i].place(relx=0.1, y=40 + i * editHeight, width=100)
+            self.Labels[i].place(relx=0.1, y=40 + i * editHeight, width=120)
             if heading == 'Модель' and table['heading'] != 'Модели поездов':
                 self.create_combobox('model', 'trains', i)
             elif heading == 'Поезд':
@@ -362,11 +371,16 @@ class CreateDialog(ModalWindow):
                 self.create_combobox('post', 'posts', i)
             elif heading == 'Заведующий':
                 self.create_combobox("tabno || ', ' || last_name || ' ' || first_name || ' ' || patronymic", 'route_managers', i)
+            elif heading == 'Откуда':
+                self.create_combobox("name || ', ' || direction", 'stations', i)
+                self.Edits[i].bind("<<ComboboxSelected>>", self.on_cb_select)
+            elif heading == 'Куда':
+                self.Edits[i] = ttk.Combobox(self)
             else:
                 self.Edits[i] = tk.Entry(self,
                                          textvariable=self.retDict[table['col_headings'][i]],
                                          validate='key')
-            self.Edits[i].place(relx=0.5, y=40 + i * editHeight, width=100)
+            self.Edits[i].place(relx=0.5, y=40 + i * editHeight, width=150)
         self.ok_button = tk.Button(self, text='OK', command=self.on_ok)
         self.ok_button.place(relx=.5, rely=.9, relwidth=.4,
                              height=30, anchor='c')
