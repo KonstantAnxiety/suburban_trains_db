@@ -108,7 +108,7 @@ class SQLTreeView(ttk.Treeview):
                 self.db.execute(text(f'DELETE FROM {self.table["name"]} WHERE {self.table["columns"][0]} = :id'),
                                 id=self.set(item, '#1'))
         except exc.SQLAlchemyError as err:
-            messagebox.showerror(title='Ошибка', message=err)
+            messagebox.showerror(title='Ошибка', message=err.orig)
         self.read_records()
 
 
@@ -218,11 +218,11 @@ class MainWindow(tk.Frame):
         # try:
         #     self.db.execute("INSERT INTO stations VALUES(13, 'Мытищи', 3, 16.68, 'Ярославское')")
         # except exc.SQLAlchemyError as err:
-        #     messagebox.showerror(title='Ошибка', message=err)
+        #     messagebox.showerror(title='Ошибка', message=err.orig)
         # try:
         #     self.db.execute("INSERT INTO directions VALUES('asdf', 28, '123456')")
         # except exc.SQLAlchemyError as err:
-        #     messagebox.showerror(title='Ошибка', message=err)
+        #     messagebox.showerror(title='Ошибка', message=err.orig)
 
     def on_update(self):
         print('on_update')
@@ -309,7 +309,6 @@ class ModalWindow(tk.Toplevel):
 
 class CreateDialog(ModalWindow):
     """ Window for add data """
-    """ Window for add data """
 
     def __init__(self, root, table):
         super().__init__(root)
@@ -372,9 +371,9 @@ class CreateDialog(ModalWindow):
             elif heading == 'Машинист':
                 self.create_combobox("last_name || ' ' || first_name || ' ' || patronymic || ', ' || tabno",
                                      'machinists', i, self.table)
-            elif heading == 'Кассир':
-                self.create_combobox("last_name || ' ' || first_name || ' ' || patronymic || ', ' || tabno",
-                                     'cashiers', i, self.table)
+            # elif heading == 'Кассир':
+            #     self.create_combobox("last_name || ' ' || first_name || ' ' || patronymic || ', ' || tabno",
+            #                          'cashiers', i, self.table)
             elif heading == 'Туда-обратно':
                 self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[self.table['col_headings'][i]])
                 # self.Edits[i].bind("<<ComboboxSelected>>", lambda event, i: self.on_round_trip(event, i))
@@ -395,6 +394,10 @@ class CreateDialog(ModalWindow):
                                          validate='key')
                 if heading == 'Остановки':
                     self.Edits[i].config(state='disabled')
+                elif heading in ('Кассир', 'Стоимость'):
+                    self.Edits[i].config(state='disabled')
+                    self.retDict[self.table['col_headings'][i]].set('0')
+
             self.Edits[i].place(relx=0.5, y=40 + i * editHeight, width=150)
         self.ok_button = tk.Button(self, text='OK', command=self.on_ok)
         self.ok_button.place(relx=.5, rely=.9, relwidth=.4,
@@ -412,8 +415,11 @@ class CreateDialog(ModalWindow):
         elif 'нет' in input_data:
             input_data[input_data.index('нет')] = '0'
         insert_data = ', '.join([f"'{x}'" for x in input_data if x != ''])
-        if insert_data:
-            self.root.db.execute(text(f"INSERT INTO {self.table['name']} VALUES ({str(insert_data)})"))
+        try:
+            if insert_data:
+                self.root.db.execute(text(f"INSERT INTO {self.table['name']} VALUES ({str(insert_data)})"))
+        except exc.SQLAlchemyError as err:
+            messagebox.showerror(title='Ошибка', message=err.orig)
         self.on_exit()
 
     def show(self):
