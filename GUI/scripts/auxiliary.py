@@ -27,7 +27,7 @@ post_tables = {
             'name': 'tickets',
             'heading': 'Билеты',
             'columns': ['id', 'cost', 'tariff', 'payment_date', 'round_trip', 'depart_st', 'arrive_st', 'cashier', ],
-            'col_headings': ['Номер', 'Стоимость', 'Тип', 'Дата', 'Туда-обратно', 'Откуда', 'Куда', 'Кассир', ],
+            'col_headings': ['ID', 'Стоимость', 'Тип', 'Дата', 'Туда-обратно', 'Откуда', 'Куда', 'Кассир', ],
             'CREATE': True,
             'UPDATE': False,
             'DELETE': True
@@ -38,7 +38,7 @@ post_tables = {
             'name': 'trains',
             'heading': 'Поезда',
             'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
-            'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
+            'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': False,
             'UPDATE': False,
             'DELETE': False
@@ -47,7 +47,7 @@ post_tables = {
             'name': 'active_trains',
             'heading': 'Активные поезда',
             'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
-            'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
+            'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': False,
             'UPDATE': False,
             'DELETE': False
@@ -78,7 +78,7 @@ post_tables = {
             'name': 'manager_routes_verbose',
             'heading': 'Маршруты',
             'columns': ['id', 'tariff', 'wdays', 'way', 'stops', ],
-            'col_headings': ['Номер', 'Тип', 'Режим движения', 'Сторона', 'Остановки', ],
+            'col_headings': ['ID', 'Тип', 'Режим движения', 'Сторона', 'Остановки', ],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
@@ -95,8 +95,8 @@ post_tables = {
         {
             'name': 'manager_stations',
             'heading': 'Станции направления',
-            'columns': ['direction', 'name', 'sub_area', 'distance', ],
-            'col_headings': ['Направление', 'Название', 'Приг. зона', 'Километр', ],
+            'columns': ['id', 'name', 'sub_area', 'distance', 'direction', ],
+            'col_headings': ['ID', 'Название', 'Приг. зона', 'Километр', 'Направление', ],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
@@ -118,6 +118,15 @@ post_tables = {
             'CREATE': False,
             'UPDATE': False,
             'DELETE': False
+        },
+        {
+            'name': 'route_stations',
+            'heading': 'Станции маршрутов',
+            'columns': ['station', 'route', 'arrive_time', ],
+            'col_headings': ['Станция', 'Маршрут', 'Время прибытия', ],
+            'CREATE': True,
+            'UPDATE': True,
+            'DELETE': True
         },
     ],
     'Менеджер по персоналу': [
@@ -155,8 +164,8 @@ post_tables = {
         {
             'name': 'machinist_workload',
             'heading': 'Нагрузка машинистов',
-            'columns': ['rt_id', 'ddate', 'machinist', 'tr_id', ],
-            'col_headings': ['Номер маршрута', 'Дата', 'Машинист', 'Номер поезда'],
+            'columns': ['rt_id', 'machinist', 'ddate', 'tr_id', ],
+            'col_headings': ['Номер маршрута', 'Машинист', 'Дата', 'Номер поезда'],
             'CREATE': False,
             'UPDATE': False,
             'DELETE': False
@@ -205,7 +214,7 @@ post_tables = {
             'name': 'trains',
             'heading': 'Поезда',
             'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
-            'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
+            'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
@@ -214,7 +223,7 @@ post_tables = {
             'name': 'active_trains',
             'heading': 'Активные поезда',
             'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
-            'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
+            'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
@@ -265,7 +274,7 @@ post_tables = {
             'name': 'trains',
             'heading': 'Поезда',
             'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
-            'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
+            'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': False,
             'UPDATE': False,
             'DELETE': False
@@ -274,7 +283,7 @@ post_tables = {
             'name': 'active_trains',
             'heading': 'Активные поезда',
             'columns': ['id', 'model', 'serv_start_date', 'serv_end_date', ],
-            'col_headings': ['Номер', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
+            'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': False,
             'UPDATE': False,
             'DELETE': False
@@ -304,8 +313,8 @@ post_tables = {
         {
             'name': 'routes',
             'heading': 'Маршруты',
-            'columns': ['id', 'tariff', 'wdays', 'way', ],
-            'col_headings': ['Номер', 'Тип', 'Режим движения', 'Сторона', ],
+            'columns': ['id', 'direction', 'tariff', 'wdays', 'way', ],
+            'col_headings': ['ID', 'Направление', 'Тип', 'Режим движения', 'Сторона', ],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
@@ -313,8 +322,8 @@ post_tables = {
         {
             'name': 'rides',
             'heading': 'Рейсы',
-            'columns': ['ddate', 'route', 'train', ],
-            'col_headings': ['Дата', 'Номер маршрута', 'Поезд', ],
+            'columns': ['id', 'ddate', 'route', 'train', 'machinist'],
+            'col_headings': ['ID', 'Дата', 'Номер маршрута', 'Поезд', 'Номер машиниста'],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
@@ -322,7 +331,7 @@ post_tables = {
         {
             'name': 'stations',
             'heading': 'Станции',
-            'columns': ['direction', 'name', 'sub_area', 'distance', ],
+            'columns': ['id', 'name', 'sub_area', 'distance', 'direction', ],
             'col_headings': ['Направление', 'Название', 'Приг. зона', 'Километр', ],
             'CREATE': True,
             'UPDATE': True,
@@ -345,6 +354,15 @@ post_tables = {
             'CREATE': False,
             'UPDATE': False,
             'DELETE': False
+        },
+        {
+            'name': 'route_stations',
+            'heading': 'Станции маршрутов',
+            'columns': ['station', 'route', 'arrive_time', ],
+            'col_headings': ['Станция', 'Маршрут', 'Время прибытия', ],
+            'CREATE': True,
+            'UPDATE': True,
+            'DELETE': True
         },
     ],
 }
