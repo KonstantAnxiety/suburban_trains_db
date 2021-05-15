@@ -13,6 +13,7 @@ post_tables = {
     #     ...
     # ],
     # ...
+    # TODO search date
     'Кассир': [
         {
             'name': 'rides_verbose',
@@ -23,6 +24,7 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
+        # TODO search station
         {
             'name': 'tickets',
             'heading': 'Билеты',
@@ -52,6 +54,7 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
+        # TODO search tabno fio
         {
             'name': 'machinists',
             'heading': 'Машинисты',
@@ -83,6 +86,7 @@ post_tables = {
             'UPDATE': True,
             'DELETE': True
         },
+        # TODO date machinist
         {
             'name': 'rides',
             'heading': 'Рейсы',
@@ -110,6 +114,7 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
+        # TODO date
         {
             'name': 'rides_verbose',
             'heading': 'Расписание',
@@ -139,6 +144,7 @@ post_tables = {
             'UPDATE': True,
             'DELETE': True
         },
+        # TODO tabno fio
         {
             'name': 'employees',
             'heading': 'Сотрудники',
@@ -150,6 +156,7 @@ post_tables = {
             'UPDATE': True,
             'DELETE': True
         },
+        # TODO tabno fio
         {
             'name': 'active_staff',
             'heading': 'Активный штат',
@@ -190,6 +197,7 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
+        # TODO date
         {
             'name': 'rides_verbose',
             'heading': 'Расписание',
@@ -228,6 +236,7 @@ post_tables = {
             'UPDATE': True,
             'DELETE': True
         },
+        # TODO tabno fio
         {
             'name': 'machinists',
             'heading': 'Машинисты',
@@ -288,6 +297,7 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
+        # TODO tabno fio
         {
             'name': 'machinists',
             'heading': 'Машинисты',
@@ -311,14 +321,16 @@ post_tables = {
             'DELETE': False
         },
         {
+            # TODO направление
             'name': 'routes',
             'heading': 'Маршруты',
-            'columns': ['id', 'direction', 'tariff', 'wdays', 'way', ],
-            'col_headings': ['ID', 'Направление', 'Тип', 'Режим движения', 'Сторона', ],
+            'columns': ['id', 'tariff', 'wdays', 'way', ],
+            'col_headings': ['ID', 'Тип', 'Режим движения', 'Сторона', ],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
         },
+        # TODO date
         {
             'name': 'rides',
             'heading': 'Рейсы',
@@ -346,6 +358,7 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
+        # TODO date stops
         {
             'name': 'rides_verbose',
             'heading': 'Расписание',

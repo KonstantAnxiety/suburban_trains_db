@@ -111,6 +111,9 @@ class SQLTreeView(ttk.Treeview):
             messagebox.showerror(title='Ошибка', message=err.orig)
         self.read_records()
 
+    def search_records(self, event=None):
+        ScheduleSearch(self, self.table).show()
+
 
 class SQLNotebook(ttk.Notebook):
     """ ttk.Notebook that is able to interact with specific tables/views in a given DB """
@@ -165,6 +168,11 @@ class SQLNotebook(ttk.Notebook):
         """ Call read_records() of a currently selected table """
 
         self.tabs_tables[self.index(self.select())].read_records()
+
+    def search_records(self):
+        """ Call update_record() of a currently selected table """
+
+        self.tabs_tables[self.index(self.select())].search_records()
 
     def on_tab_change(self, event):
         self.root.master.children['!mainwindow'].update_btns(self.tables[self.index(self.select())])
@@ -237,7 +245,7 @@ class MainWindow(tk.Frame):
         self.nb_main.reset_records()
 
     def on_search(self):
-        print('on_search')
+        self.nb_main.search_records()
 
     def configure_notebook(self):
         """ Create a SQLNotebook instance """
@@ -421,6 +429,61 @@ class CreateDialog(ModalWindow):
         except exc.SQLAlchemyError as err:
             messagebox.showerror(title='Ошибка', message=err.orig)
         self.on_exit()
+
+    def show(self):
+        self.wait_window()
+
+
+class ScheduleSearch(ModalWindow):
+    """ Search window for schedule """
+
+    def __init__(self, root, table):
+        super().__init__(root)
+        self.retDict = {'from': tk.StringVar(), 'to': tk.StringVar()}
+        self.table = table
+        self.init_pass()
+        self.protocol('WM_DELETE_WINDOW', self.on_exit)
+
+    def init_pass(self):
+        self.title("Поиск по дате")
+
+        label_from = tk.Label(self, text='Поиск по дате')
+        label_from.place(x=self.window_width // 2, y=20, anchor='center')
+
+        label_to = tk.Label(self, text='Нижняя граница:')
+        label_to.place(x=self.window_width // 2, y=80, anchor='e')
+
+        self.entry_from = tk.Entry(self, textvariable=self.retDict['from'])
+        self.entry_from.place(x=self.window_width // 2, y=80, anchor='w')
+
+        label_pass = tk.Label(self, text='Верхняя граница:')
+        label_pass.place(x=self.window_width // 2, y=110, anchor='e')
+
+        self.entry_to = tk.Entry(self, textvariable=self.retDict['to'])
+        self.entry_to.place(x=self.window_width // 2, y=110, anchor='w')
+
+        self.ok_button = tk.Button(self, text='OK', command=self.on_ok)
+        self.ok_button.place(x=self.window_width // 2, y=150, anchor='center')
+        self.bind('<Return>', self.on_ok)
+
+    def on_exit(self, event=None):
+        self.retDict = None
+        self.destroy()
+
+    def on_ok(self, event=None):
+        input_data = [value.get() for key, value in self.retDict.items()]
+        if input_data:
+            if not input_data[0]:
+                print(self.root.db.execute(text("SELECT * FROM rides_verbose WHERE ddate < :input_date"),
+                                     input_date=input_data[1]).fetchall())
+            elif not input_data[1]:
+                print(self.root.db.execute(text("SELECT * FROM rides_verbose WHERE ddate > :input_date"),
+                                     input_date=input_data[0]).fetchall())
+            else:
+                print(self.root.db.execute(text("SELECT * FROM rides_verbose WHERE ddate BETWEEN (:from_date, :to_date)"),
+                                     from_date=input_data[0], to_date=input_data[1]).fetchall())
+        self.on_exit()
+
 
     def show(self):
         self.wait_window()
