@@ -14,15 +14,15 @@ post_tables = {
     # ],
     # ...
     'Кассир': [
-        # {
-        #     'name': 'schedule_week',
-        #     'heading': 'Расписание на неделю',
-        #     'columns': ['ddate', 'route', 'stops', 'train', ],
-        #     'col_headings': ['Дата', 'Номер маршрута', 'Остановки', 'Поезд', ],
-        #     'CREATE': False,
-        #     'UPDATE': False,
-        #     'DELETE': False
-        # },
+        {
+            'name': 'rides_verbose',
+            'heading': 'Расписание',
+            'columns': ['ddate', 'train', 'id', 'tariff', 'stops', ],
+            'col_headings': ['Дата', 'Номер поезда', 'Номер маршрута', 'Тариф', 'Остановки', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
         {
             'name': 'tickets',
             'heading': 'Билеты',
@@ -110,6 +110,15 @@ post_tables = {
             'UPDATE': False,
             'DELETE': False
         },
+        {
+            'name': 'rides_verbose',
+            'heading': 'Расписание',
+            'columns': ['ddate', 'train', 'id', 'tariff', 'stops', ],
+            'col_headings': ['Дата', 'Номер поезда', 'Номер маршрута', 'Тариф', 'Остановки', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
     ],
     'Менеджер по персоналу': [
         {
@@ -168,6 +177,15 @@ post_tables = {
             'heading': 'Назначенные рейсы',
             'columns': ['ddate', 'train', 'id', 'tariff', 'stops'],
             'col_headings': ['Дата', 'Поезд', 'Номер маршрута', 'Тип', 'Остановки', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
+        {
+            'name': 'rides_verbose',
+            'heading': 'Расписание',
+            'columns': ['ddate', 'train', 'id', 'tariff', 'stops', ],
+            'col_headings': ['Дата', 'Номер поезда', 'Номер маршрута', 'Тариф', 'Остановки', ],
             'CREATE': False,
             'UPDATE': False,
             'DELETE': False
@@ -315,6 +333,15 @@ post_tables = {
             'heading': 'Статистика билетов',
             'columns': ['tariff', 'amount', 'total', ],
             'col_headings': ['Тариф', 'Количество', 'Общая выручка', ],
+            'CREATE': False,
+            'UPDATE': False,
+            'DELETE': False
+        },
+        {
+            'name': 'rides_verbose',
+            'heading': 'Расписание',
+            'columns': ['ddate', 'train', 'id', 'tariff', 'stops', ],
+            'col_headings': ['Дата', 'Номер поезда', 'Номер маршрута', 'Тариф', 'Остановки', ],
             'CREATE': False,
             'UPDATE': False,
             'DELETE': False
