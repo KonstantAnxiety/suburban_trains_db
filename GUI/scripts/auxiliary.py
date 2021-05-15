@@ -321,11 +321,10 @@ post_tables = {
             'DELETE': False
         },
         {
-            # TODO направление
             'name': 'routes',
             'heading': 'Маршруты',
-            'columns': ['id', 'tariff', 'wdays', 'way', ],
-            'col_headings': ['ID', 'Тип', 'Режим движения', 'Сторона', ],
+            'columns': ['id', 'direction', 'tariff', 'wdays', 'way', ],
+            'col_headings': ['ID', 'Направление', 'Тип', 'Режим движения', 'Сторона', ],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True
