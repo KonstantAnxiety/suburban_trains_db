@@ -26,8 +26,8 @@ post_tables = {
         {
             'name': 'tickets',
             'heading': 'Билеты',
-            'columns': ['payment_date', 'depart_st', 'arrive_st', 'tariff', 'round_trip', 'cashier', 'cost', ],
-            'col_headings': ['Дата', 'Откуда', 'Куда', 'Тип', 'Туда-обратно', 'Кассир', 'Стоимость', ],
+            'columns': ['id', 'cost', 'tariff', 'payment_date', 'round_trip', 'depart_st', 'arrive_st', 'cashier', ],
+            'col_headings': ['Номер', 'Стоимость', 'Тип', 'Дата', 'Туда-обратно', 'Откуда', 'Куда', 'Кассир', ],
             'CREATE': True,
             'UPDATE': False,
             'DELETE': True

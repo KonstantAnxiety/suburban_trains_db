@@ -60,6 +60,7 @@ class SQLTreeView(ttk.Treeview):
     def create_record(self):
         print(f'{self.table}.create_record')
         CreateDialog(self, self.table).show()
+        self.read_records()
         # nb = self.master.master
         # nb = nb.index(nb.select())
         # dic = funcs.askValuesDialog(self.root, self.config, DB.db[nb].columns).show()
@@ -104,7 +105,8 @@ class SQLTreeView(ttk.Treeview):
         print(f'{self.table}.delete_records')
         try:
             for item in self.selection():
-                self.db.execute(text(f'DELETE FROM {self.table["name"]} WHERE {self.table["columns"][0]} = :id'), id=self.set(item, '#1'))
+                self.db.execute(text(f'DELETE FROM {self.table["name"]} WHERE {self.table["columns"][0]} = :id'),
+                                id=self.set(item, '#1'))
         except exc.SQLAlchemyError as err:
             messagebox.showerror(title='Ошибка', message=err)
         self.read_records()
@@ -311,9 +313,16 @@ class CreateDialog(ModalWindow):
 
     def __init__(self, root, table):
         super().__init__(root)
-        self.init_pass(table)
-        # self.root.root.withdraw()
+        self.table = table
+        self.init_pass()
         self.protocol('WM_DELETE_WINDOW', self.on_exit)
+
+    # def on_round_trip(self, event, i):
+    #     selected_row = event.widget.get()
+    #     if selected_row == 'да':
+    #         self.retDict[self.table['col_headings'][i]].set('1')
+    #     else:
+    #         self.retDict[self.table['col_headings'][i]].set('0')
 
     def on_station_select(self, event):
         selected_row = event.widget.get()
@@ -323,67 +332,69 @@ class CreateDialog(ModalWindow):
             [item[0] for item in self.root.db.execute(f"SELECT name || ', ' || id FROM stations WHERE direction = "
                                                       f"'{station[1]}' AND name != '{station[0]}'").fetchall()]
 
-
     def create_combobox(self, column, tab, i, table):
         self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[table['col_headings'][i]])
         self.Edits[i]['values'] = [item[0] for item in self.root.db.execute(f"SELECT {column} FROM {tab}").fetchall()]
         # self.Edits[i].bind("<<ComboboxSelected>>", self.on_cb_select)
 
-    def init_pass(self, table):
+    def init_pass(self):
         self.title('Введите значения')
         x = str(self.root.winfo_screenwidth() // 2 - 150)
         y = str(self.root.winfo_screenheight() // 2 - 200)
         self.geometry('350x420+' + x + '+' + y)
-        self.Labels = [None] * len(table['columns'])
-        self.Edits = [None] * len(table['columns'])
+        self.Labels = [None] * len(self.table['columns'])
+        self.Edits = [None] * len(self.table['columns'])
         self.retDict = dict()
-        for i in range(len(table['columns'])):
-            heading = table['col_headings'][i]
+        for i in range(len(self.table['columns'])):
+            heading = self.table['col_headings'][i]
             self.retDict[heading] = tk.StringVar()
-            editHeight = 0.8 * 400 / len(table['col_headings'])
+            editHeight = 0.8 * 400 / len(self.table['col_headings'])
             self.Labels[i] = tk.Label(self, text=heading + ':', anchor='e')
-            self.Labels[i].place(relx=0.1, y=40 + i * editHeight, width=120)
-            if heading == 'Модель' and table['heading'] != 'Модели поездов':
-                self.create_combobox('model', 'train_models', i, table)
+            self.Labels[i].place(relx=0.1, y=40 + i * editHeight, width=140)
+            if heading == 'Модель' and self.table['heading'] != 'Модели поездов':
+                self.create_combobox('model', 'train_models', i, self.table)
             elif heading == 'Поезд':
-                self.create_combobox('id', 'trains', i, table)
+                self.create_combobox('id', 'trains', i, self.table)
             elif heading == 'Номер маршрута':
-                self.create_combobox('id', 'routes', i, table)
+                self.create_combobox('id', 'routes', i, self.table)
             elif heading == 'Направление':
-                self.create_combobox('name', 'directions', i, table)
+                self.create_combobox('name', 'directions', i, self.table)
             # elif heading == 'Пригородная зона':
             #     self.create_combobox('', '', i)
             elif heading == 'Тип':
-                self.create_combobox('name', 'tariffs', i, table)
+                self.create_combobox('name', 'tariffs', i, self.table)
             elif heading == 'Режим движения':
-                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[table['col_headings'][i]])
+                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[self.table['col_headings'][i]])
                 self.Edits[i]['values'] = ['ежедневно', 'по рабочим', 'по выходным']
             elif heading == 'Сторона':
-                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[table['col_headings'][i]])
+                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[self.table['col_headings'][i]])
                 self.Edits[i]['values'] = ['в город', 'из города']
             elif heading == 'Машинист':
                 self.create_combobox("last_name || ' ' || first_name || ' ' || patronymic || ', ' || tabno",
-                                     'machinists', i, table)
+                                     'machinists', i, self.table)
             elif heading == 'Кассир':
                 self.create_combobox("last_name || ' ' || first_name || ' ' || patronymic || ', ' || tabno",
-                                     'cashiers', i, table)
+                                     'cashiers', i, self.table)
             elif heading == 'Туда-обратно':
-                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[table['col_headings'][i]])
+                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[self.table['col_headings'][i]])
+                # self.Edits[i].bind("<<ComboboxSelected>>", lambda event, i: self.on_round_trip(event, i))
                 self.Edits[i]['values'] = ['да', 'нет']
-            elif heading in ('Название должности', 'Должность'):
-                self.create_combobox('post', 'posts', i, table)
+            elif heading in ('Должность'):
+                self.create_combobox('post', 'posts', i, self.table)
             elif heading == 'Заведующий':
                 self.create_combobox("last_name || ' ' || first_name || ' ' || patronymic || ', ' || tabno",
-                                     'route_managers', i, table)
+                                     'route_managers', i, self.table)
             elif heading == 'Откуда':
-                self.create_combobox("name || ', ' || direction || ', ' || id", 'stations', i, table)
+                self.create_combobox("name || ', ' || direction || ', ' || id", 'stations', i, self.table)
                 self.Edits[i].bind("<<ComboboxSelected>>", self.on_station_select)
             elif heading == 'Куда':
-                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[table['col_headings'][i]])
+                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[self.table['col_headings'][i]])
             else:
                 self.Edits[i] = tk.Entry(self,
-                                         textvariable=self.retDict[table['col_headings'][i]],
+                                         textvariable=self.retDict[self.table['col_headings'][i]],
                                          validate='key')
+                if heading == 'Остановки':
+                    self.Edits[i].config(state='disabled')
             self.Edits[i].place(relx=0.5, y=40 + i * editHeight, width=150)
         self.ok_button = tk.Button(self, text='OK', command=self.on_ok)
         self.ok_button.place(relx=.5, rely=.9, relwidth=.4,
@@ -395,7 +406,14 @@ class CreateDialog(ModalWindow):
         self.destroy()
 
     def on_ok(self, event=None):
-        print([x.get() for x in list(self.retDict.values())])
+        input_data = [x.get().split(', ')[-1] for x in list(self.retDict.values())]
+        if 'да' in input_data:
+            input_data[input_data.index('да')] = '1'
+        elif 'нет' in input_data:
+            input_data[input_data.index('нет')] = '0'
+        insert_data = ', '.join([f"'{x}'" for x in input_data if x != ''])
+        if insert_data:
+            self.root.db.execute(text(f"INSERT INTO {self.table['name']} VALUES ({str(insert_data)})"))
         self.on_exit()
 
     def show(self):
@@ -415,22 +433,22 @@ class AuthDialog(ModalWindow):
     def init_pass(self):
         self.title('Авторизация')
         label_welcome = tk.Label(self, text='Введите логин и пароль')
-        label_welcome.place(x=self.window_width//2, y=20, anchor='center')
+        label_welcome.place(x=self.window_width // 2, y=20, anchor='center')
 
         label_login = tk.Label(self, text='Табельный номер:')
-        label_login.place(x=self.window_width//2, y=80, anchor='e')
+        label_login.place(x=self.window_width // 2, y=80, anchor='e')
 
         self.entry_login = tk.Entry(self, textvariable=self.retDict['login'])
-        self.entry_login.place(x=self.window_width//2, y=80, anchor='w')
+        self.entry_login.place(x=self.window_width // 2, y=80, anchor='w')
 
         label_pass = tk.Label(self, text='Пароль:')
-        label_pass.place(x=self.window_width//2, y=110, anchor='e')
+        label_pass.place(x=self.window_width // 2, y=110, anchor='e')
 
         self.entry_pass = tk.Entry(self, show='*', textvariable=self.retDict['password'])
-        self.entry_pass.place(x=self.window_width//2, y=110, anchor='w')
+        self.entry_pass.place(x=self.window_width // 2, y=110, anchor='w')
 
         btn_signin = tk.Button(self, text='Войти', command=self.on_submit)
-        btn_signin.place(x=self.window_width*3//4, y=150, anchor='e')
+        btn_signin.place(x=self.window_width * 3 // 4, y=150, anchor='e')
         self.bind('<Return>', self.on_submit)
 
         btn_exit = tk.Button(self, text='Отмена', command=self.on_exit)
@@ -465,28 +483,28 @@ class CashierDialog(ModalWindow):
     def init_pass(self):
         self.title('Кассир')
         label_welcome = tk.Label(self, text='Выберите направление и станцию,\nна которой сегодня работаете')
-        label_welcome.place(x=self.window_width//2, y=20, anchor='center')
+        label_welcome.place(x=self.window_width // 2, y=20, anchor='center')
 
         label_direction = tk.Label(self, text='Направление:')
-        label_direction.place(x=self.window_width//2, y=80, anchor='e')
+        label_direction.place(x=self.window_width // 2, y=80, anchor='e')
 
         directions = [item[0] for item in self.root.db.execute('SELECT name FROM directions;').fetchall()]
         self.combo_direction = ttk.Combobox(self, values=directions, textvariable=self.ret_dict['direction'])
         self.combo_direction.current(0)
-        self.combo_direction.place(x=self.window_width//2, y=80, anchor='w')
+        self.combo_direction.place(x=self.window_width // 2, y=80, anchor='w')
         self.combo_direction.bind('<<ComboboxSelected>>', self.update_stations)
 
         label_station = tk.Label(self, text='Станция:')
-        label_station.place(x=self.window_width//2, y=110, anchor='e')
+        label_station.place(x=self.window_width // 2, y=110, anchor='e')
 
         self.station_ids = []
         self.station_names = []
         self.combo_station = ttk.Combobox(self, values='', textvariable=self.ret_dict['station'])
-        self.combo_station.place(x=self.window_width//2, y=110, anchor='w')
+        self.combo_station.place(x=self.window_width // 2, y=110, anchor='w')
         self.update_stations()
 
         btn_signin = tk.Button(self, text='Подтвердить', command=self.on_submit)
-        btn_signin.place(x=self.window_width*3//4, y=150, anchor='e')
+        btn_signin.place(x=self.window_width * 3 // 4, y=150, anchor='e')
         self.bind('<Return>', self.on_submit)
 
         btn_exit = tk.Button(self, text='Отмена', command=self.on_exit)
@@ -501,6 +519,7 @@ class CashierDialog(ModalWindow):
             self.station_names.append(item[1])
         self.combo_station['values'] = self.station_names
         self.combo_station.set('')
+        # TODO read records
 
     def on_submit(self, event=None):
         if not self.ret_dict['direction'].get() or not self.ret_dict['station'].get():
