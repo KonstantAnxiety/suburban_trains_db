@@ -519,6 +519,8 @@ class UpdateDialog(ModalWindow):
             elif heading == 'Машинист':
                 self.create_combobox("last_name || ' ' || first_name || ' ' || patronymic || ', ' || tabno",
                                      'machinists', i, self.table)
+            elif heading == 'Номер машиниста':
+                self.create_combobox('tabno', 'machinists', i, self.table)
             # elif heading == 'Кассир':
             #     self.create_combobox("last_name || ' ' || first_name || ' ' || patronymic || ', ' || tabno",
             #                          'cashiers', i, self.table)
