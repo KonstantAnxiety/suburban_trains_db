@@ -26,7 +26,6 @@ class SQLTreeView(ttk.Treeview):
         self.popup_menu.add_command(label='Снять выделение', command=self.deselect)
         self.popup_menu.add_command(label='Добавить', command=self.create_record)
         self.popup_menu.add_command(label='Удалить', command=self.delete_records)
-        self.popup_menu.add_command(label='Изменить', command=self.update_record)
         self.bind('<Button-3>', self.popup)
 
         # col_width = int((self.root.master.root.master.winfo_width() - 20) / len(table['columns']))
@@ -58,53 +57,19 @@ class SQLTreeView(ttk.Treeview):
         [self.insert('', 'end', values=list(row)) for row in records]
 
     def create_record(self):
-        print(f'{self.table}.create_record')
+        # print(f'{self.table}.create_record')
         CreateDialog(self, self.table).show()
         self.read_records()
-        # nb = self.master.master
-        # nb = nb.index(nb.select())
-        # dic = funcs.askValuesDialog(self.root, self.config, DB.db[nb].columns).show()
-        # values = list(dic.values())
-        # keys = list(dic.keys())
-        # if len(values):
-        #     values = [item.get() for item in values]
-        #     values[0] = str(self.genUID())
-        #     DB.modified = True
-        #
-        #     DB.db[nb] = DB.db[nb].append(
-        #         pd.DataFrame([[np.int64(item) if item.isdigit() else item for item in values]],
-        #                      columns=keys), ignore_index=True)
-        #     self.add('', values=values)
 
     def update_record(self, selected_row_values):
-        print(f'{self.table}.update_record')
+        # print(f'{self.table}.update_record')
         UpdateDialog(self, self.table, selected_row_values).show()
         self.read_records()
-        # nb = self.master.master
-        # nb = nb.index(nb.select())
-        # selected = self.selection()
-        # if not selected:
-        #     funcs.message(self.root, 'Не выбран элемент', msgtype='warning').fade()
-        # else:
-        #     selected = int(selected[0])
-        #     itemId = np.int64(self.item(selected)['values'][0])
-        #     itemValues = DB.db[nb][DB.db[nb]['Код'] == itemId].values[0].tolist()
-        #     dic = funcs.askValuesDialog(self.root, self.config, DB.db[nb].columns,
-        #                                 currValues=itemValues).show()
-        #     keys = list(dic.keys())
-        #     values = list(dic.values())
-        #     if len(values):
-        #         values = [item.get() for item in values]
-        #         values[0] = itemId
-        #         DB.modified = True
-        #         for i in range(len(keys)):
-        #             self.item(selected, values=values)
-        #             DB.db[nb].loc[itemId - 1, keys[i]] = values[i]
 
     def delete_records(self, event=None):
         """ Deletes selected records from the DB and refreshes the treeview """
 
-        print(f'{self.table}.delete_records')
+        # print(f'{self.table}.delete_records')
         try:
             for item in self.selection():
                 self.db.execute(text(f'DELETE FROM {self.table["name"]} WHERE {self.table["columns"][0]} = :id'),
@@ -229,28 +194,19 @@ class MainWindow(tk.Frame):
         self.btn_search.pack(side=tk.RIGHT, padx=10, pady=10)
 
     def on_create(self):
-        print('on_create')
+        # print('on_create')
         self.nb_main.create_record()
-        # # exception example
-        # try:
-        #     self.db.execute("INSERT INTO stations VALUES(13, 'Мытищи', 3, 16.68, 'Ярославское')")
-        # except exc.SQLAlchemyError as err:
-        #     messagebox.showerror(title='Ошибка', message=err.orig)
-        # try:
-        #     self.db.execute("INSERT INTO directions VALUES('asdf', 28, '123456')")
-        # except exc.SQLAlchemyError as err:
-        #     messagebox.showerror(title='Ошибка', message=err.orig)
 
     def on_update(self):
-        print('on_update')
+        # print('on_update')
         self.nb_main.update_record()
 
     def on_delete(self):
-        print('on_delete')
+        # print('on_delete')
         self.nb_main.delete_records()
 
     def on_reset(self):
-        print('on_reset')
+        # print('on_reset')
         self.nb_main.reset_records()
 
     def on_search(self):
@@ -261,7 +217,7 @@ class MainWindow(tk.Frame):
 
         self.nb_main = SQLNotebook(self.f_tabs, self.db, post_tables[self.employee_post])
         self.nb_main.pack(expand=True, fill=tk.BOTH)
-        #self.nb_main.tabs_tables[self.nb_main.current_tab_id].bind("<<TreeviewSelect>>", self.on_tree_select)
+        # self.nb_main.tabs_tables[self.nb_main.current_tab_id].bind("<<TreeviewSelect>>", self.on_tree_select)
 
     def update_btns(self, permissions):
         perm_map = {True: 'normal', False: 'disabled'}
@@ -448,7 +404,8 @@ class CreateDialog(ModalWindow):
 
     def show(self):
         self.wait_window()
-        
+
+
 class UpdateDialog(ModalWindow):
     """ Window for update data """
 
