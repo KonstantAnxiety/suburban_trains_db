@@ -564,7 +564,7 @@ class UpdateDialog(ModalWindow):
         
     def create_set_part(self):
         input_data = [x.get().split(', ')[-1] for x in list(self.retDict.values())]
-        for i in range(len(input_data)):
+        for i in range(1, len(input_data)):
             try:
                 temp = int(float(input_data[i]))
             except:
@@ -574,7 +574,7 @@ class UpdateDialog(ModalWindow):
                     input_data[i] = "'" + input_data[i] + "'"
         result = ''
         for i in range(1, len(self.table['columns'])):
-            result = result + self.table['columns'][i] + '=' + input_data[i-1] + ', '
+            result = result + self.table['columns'][i] + '=' + input_data[i] + ', '
         return result[:-2]
 
 
