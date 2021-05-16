@@ -480,7 +480,7 @@ class UpdateDialog(ModalWindow):
         self.Labels = [None] * len(self.table['columns'])
         self.Edits = [None] * len(self.table['columns'])
         self.retDict = dict()
-        for i in range(1, len(self.table['columns'])):
+        for i in range(len(self.table['columns'])):
             heading = self.table['col_headings'][i]
             self.retDict[heading] = tk.StringVar()
             editHeight = 0.8 * 400 / len(self.table['col_headings'])
@@ -545,6 +545,7 @@ class UpdateDialog(ModalWindow):
         self.ok_button.place(relx=.5, rely=.9, relwidth=.4,
                              height=30, anchor='c')
         self.bind('<Return>', self.on_ok)
+        self.Edits[0].config(state='disabled')
 
     def on_exit(self, event=None):
         self.retDict = None
