@@ -343,7 +343,7 @@ post_tables = {
             'name': 'stations',
             'heading': 'Станции',
             'columns': ['id', 'name', 'sub_area', 'distance', 'direction', ],
-            'col_headings': ['Направление', 'Название', 'Приг. зона', 'Километр', ],
+            'col_headings': ['id', 'Название', 'Приг. зона', 'Километр', 'Направление'],
             'CREATE': True,
             'UPDATE': True,
             'DELETE': True

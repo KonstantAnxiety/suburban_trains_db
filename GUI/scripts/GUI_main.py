@@ -76,8 +76,10 @@ class SQLTreeView(ttk.Treeview):
         #                      columns=keys), ignore_index=True)
         #     self.add('', values=values)
 
-    def update_record(self):
+    def update_record(self, selected_row_values):
         print(f'{self.table}.update_record')
+        UpdateDialog(self, self.table, selected_row_values).show()
+        self.read_records()
         # nb = self.master.master
         # nb = nb.index(nb.select())
         # selected = self.selection()
@@ -125,6 +127,7 @@ class SQLNotebook(ttk.Notebook):
         self.tables = tables
         self.current_tab = None
         self.current_tab_id = 0
+        self.selected_row_values = None
         self.tabs_frames = [tk.Frame(self) for i in range(len(self.tables))]
         self.tabs_tables = [SQLTreeView(frame, self.db, table)
                             for frame, table in zip(self.tabs_frames, tables)]
@@ -140,8 +143,9 @@ class SQLNotebook(ttk.Notebook):
             scroll_y.pack(side=tk.RIGHT, expand=False, fill=tk.BOTH)
 
             table.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
+            table.bind("<<TreeviewSelect>>", self.on_tree_select)
         self.init_notebook()
-
+        
     def init_notebook(self):
         for i, table in enumerate(self.tables):
             self.add(self.tabs_frames[i], padding=3)
@@ -157,7 +161,7 @@ class SQLNotebook(ttk.Notebook):
     def update_record(self):
         """ Call update_record() of a currently selected table """
 
-        self.tabs_tables[self.index(self.select())].update_record()
+        self.tabs_tables[self.index(self.select())].update_record(self.selected_row_values)
 
     def delete_records(self):
         """ Call delete_records() of a currently selected table """
@@ -176,6 +180,11 @@ class SQLNotebook(ttk.Notebook):
 
     def on_tab_change(self, event):
         self.root.master.children['!mainwindow'].update_btns(self.tables[self.index(self.select())])
+        
+    def on_tree_select(self, event):
+        self.root.master.children['!mainwindow'].update_btns_special(self.tables[self.index(self.select())])
+        cur_item = self.tabs_tables [self.index(self.select())].focus()
+        self.selected_row_values = self.tabs_tables[self.index(self.select())].item(cur_item)['values']
 
 
 class MainWindow(tk.Frame):
@@ -252,8 +261,15 @@ class MainWindow(tk.Frame):
 
         self.nb_main = SQLNotebook(self.f_tabs, self.db, post_tables[self.employee_post])
         self.nb_main.pack(expand=True, fill=tk.BOTH)
+        #self.nb_main.tabs_tables[self.nb_main.current_tab_id].bind("<<TreeviewSelect>>", self.on_tree_select)
 
     def update_btns(self, permissions):
+        perm_map = {True: 'normal', False: 'disabled'}
+        self.btn_create['state'] = perm_map[permissions['CREATE']]
+        self.btn_update['state'] = 'disabled'
+        self.btn_delete['state'] = perm_map[permissions['DELETE']]
+        
+    def update_btns_special(self, permissions):
         perm_map = {True: 'normal', False: 'disabled'}
         self.btn_create['state'] = perm_map[permissions['CREATE']]
         self.btn_update['state'] = perm_map[permissions['UPDATE']]
@@ -432,6 +448,133 @@ class CreateDialog(ModalWindow):
 
     def show(self):
         self.wait_window()
+        
+class UpdateDialog(ModalWindow):
+    """ Window for update data """
+
+    def __init__(self, root, table, selected_row_values):
+        super().__init__(root)
+        self.table = table
+        self.selected_row_values = selected_row_values
+        self.init_pass()
+        self.protocol('WM_DELETE_WINDOW', self.on_exit)
+
+    def on_station_select(self, event):
+        selected_row = event.widget.get()
+        station = selected_row.split(', ')
+        place = self.Edits.index(event.widget)
+        self.Edits[place + 1]['values'] = \
+            [item[0] for item in self.root.db.execute(f"SELECT name || ', ' || id FROM stations WHERE direction = "
+                                                      f"'{station[1]}' AND name != '{station[0]}'").fetchall()]
+
+    def create_combobox(self, column, tab, i, table):
+        self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[table['col_headings'][i]])
+        self.Edits[i]['values'] = [item[0] for item in self.root.db.execute(f"SELECT {column} FROM {tab}").fetchall()]
+        self.Edits[i].set(self.selected_row_values[i])
+        
+    def init_pass(self):
+        self.title('Введите значения')
+        x = str(self.root.winfo_screenwidth() // 2 - 150)
+        y = str(self.root.winfo_screenheight() // 2 - 200)
+        self.geometry('350x420+' + x + '+' + y)
+        self.Labels = [None] * len(self.table['columns'])
+        self.Edits = [None] * len(self.table['columns'])
+        self.retDict = dict()
+        for i in range(1, len(self.table['columns'])):
+            heading = self.table['col_headings'][i]
+            self.retDict[heading] = tk.StringVar()
+            editHeight = 0.8 * 400 / len(self.table['col_headings'])
+            self.Labels[i] = tk.Label(self, text=heading + ':', anchor='e')
+            self.Labels[i].place(relx=0.1, y=40 + i * editHeight, width=140)
+            if heading == 'Модель' and self.table['heading'] != 'Модели поездов':
+                self.create_combobox('model', 'train_models', i, self.table)
+            elif heading == 'Поезд':
+                self.create_combobox('id', 'trains', i, self.table)
+            elif heading == 'Номер маршрута':
+                self.create_combobox('id', 'routes', i, self.table)
+            elif heading == 'Направление':
+                self.create_combobox('name', 'directions', i, self.table)
+            # elif heading == 'Пригородная зона':
+            #     self.create_combobox('', '', i)
+            elif heading == 'Тип':
+                self.create_combobox('name', 'tariffs', i, self.table)
+            elif heading == 'Режим движения':
+                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[self.table['col_headings'][i]])
+                self.Edits[i]['values'] = ['ежедневно', 'по рабочим', 'по выходным']
+                self.Edits[i].set(self.selected_row_values[i])
+            elif heading == 'Сторона':
+                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[self.table['col_headings'][i]])
+                self.Edits[i]['values'] = ['в город', 'из города']
+                self.Edits[i].set(self.selected_row_values[i])
+            elif heading == 'Машинист':
+                self.create_combobox("last_name || ' ' || first_name || ' ' || patronymic || ', ' || tabno",
+                                     'machinists', i, self.table)
+            # elif heading == 'Кассир':
+            #     self.create_combobox("last_name || ' ' || first_name || ' ' || patronymic || ', ' || tabno",
+            #                          'cashiers', i, self.table)
+            elif heading == 'Туда-обратно':
+                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[self.table['col_headings'][i]])
+                # self.Edits[i].bind("<<ComboboxSelected>>", lambda event, i: self.on_round_trip(event, i))
+                self.Edits[i]['values'] = ['да', 'нет']
+                self.Edits[i].set(self.selected_row_values[i])
+            elif heading in ('Должность'):
+                self.create_combobox('post', 'posts', i, self.table)
+            elif heading == 'Заведующий':
+                self.create_combobox("last_name || ' ' || first_name || ' ' || patronymic || ', ' || tabno",
+                                     'route_managers', i, self.table)
+            elif heading == 'Откуда':
+                self.create_combobox("name || ', ' || direction || ', ' || id", 'stations', i, self.table)
+                self.Edits[i].bind("<<ComboboxSelected>>", self.on_station_select)
+                self.Edits[i].set(self.selected_row_values[i])
+            elif heading == 'Куда':
+                self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[self.table['col_headings'][i]])
+                self.Edits[i].set(self.selected_row_values[i])
+            else:
+                self.Edits[i] = tk.Entry(self,
+                                         textvariable=self.retDict[self.table['col_headings'][i]],
+                                         validate='key')
+                self.Edits[i].insert(0, self.selected_row_values[i])
+                if heading == 'Остановки':
+                    self.Edits[i].config(state='disabled')
+                elif heading in ('Кассир', 'Стоимость'):
+                    self.Edits[i].config(state='disabled')
+                    self.retDict[self.table['col_headings'][i]].set('0')
+
+            self.Edits[i].place(relx=0.5, y=40 + i * editHeight, width=150)
+        self.ok_button = tk.Button(self, text='OK', command=self.on_ok)
+        self.ok_button.place(relx=.5, rely=.9, relwidth=.4,
+                             height=30, anchor='c')
+        self.bind('<Return>', self.on_ok)
+
+    def on_exit(self, event=None):
+        self.retDict = None
+        self.destroy()
+
+    def on_ok(self, event=None):
+        try:
+            self.root.db.execute(text(f'UPDATE {self.table["name"]} SET {self.create_set_part()} WHERE {self.table["columns"][0]} = :id'),
+                               id=self.selected_row_values[0])
+        except exc.SQLAlchemyError as err:
+            messagebox.showerror(title='Ошибка', message=err.orig)
+        self.on_exit()
+
+    def show(self):
+        self.wait_window()
+        
+    def create_set_part(self):
+        input_data = [x.get().split(', ')[-1] for x in list(self.retDict.values())]
+        for i in range(len(input_data)):
+            try:
+                temp = int(float(input_data[i]))
+            except:
+                try:
+                    input_data[i] = "'" + input_data[i].get() + "'"
+                except:
+                    input_data[i] = "'" + input_data[i] + "'"
+        result = ''
+        for i in range(1, len(self.table['columns'])):
+            result = result + self.table['columns'][i] + '=' + input_data[i-1] + ', '
+        return result[:-2]
 
 
 class ScheduleSearch(ModalWindow):
