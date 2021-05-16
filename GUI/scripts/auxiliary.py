@@ -22,7 +22,8 @@ post_tables = {
             'col_headings': ['Дата', 'Номер поезда', 'Номер маршрута', 'Тариф', 'Остановки', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': True
         },
         # TODO search station
         {
@@ -32,7 +33,8 @@ post_tables = {
             'col_headings': ['ID', 'Стоимость', 'Тип', 'Дата', 'Туда-обратно', 'Откуда', 'Куда', 'Кассир', ],
             'CREATE': True,
             'UPDATE': False,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': True
         },
     ],
     'Заведующий направлением': [
@@ -43,7 +45,8 @@ post_tables = {
             'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': False
         },
         {
             'name': 'active_trains',
@@ -52,7 +55,8 @@ post_tables = {
             'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': False
         },
         # TODO search tabno fio
         {
@@ -64,7 +68,8 @@ post_tables = {
                              'Пол', 'СНИЛС', 'ИНН', 'Дата приема', 'Дата увольнения', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': True
         },
         {
             'name': 'active_machinists',
@@ -75,7 +80,8 @@ post_tables = {
                              'Пол', 'СНИЛС', 'ИНН', 'Дата приема', 'Дата увольнения', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': True
         },
         {
             'name': 'manager_routes_verbose',
@@ -84,7 +90,8 @@ post_tables = {
             'col_headings': ['ID', 'Тип', 'Режим движения', 'Сторона', 'Остановки', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
         # TODO date machinist
         {
@@ -94,7 +101,8 @@ post_tables = {
             'col_headings': ['ID', 'Дата', 'Номер маршрута', 'Поезд', 'Машинист', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': True
         },
         {
             'name': 'manager_stations',
@@ -103,7 +111,8 @@ post_tables = {
             'col_headings': ['ID', 'Название', 'Приг. зона', 'Километр', 'Направление', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
         {
             'name': 'tickets_stat',
@@ -112,7 +121,8 @@ post_tables = {
             'col_headings': ['Тариф', 'Количество', 'Общая выручка', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': False
         },
         # TODO date
         {
@@ -122,7 +132,8 @@ post_tables = {
             'col_headings': ['Дата', 'Номер поезда', 'Номер маршрута', 'Тариф', 'Остановки', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': True
         },
         {
             'name': 'route_stations',
@@ -131,7 +142,8 @@ post_tables = {
             'col_headings': ['Станция', 'Маршрут', 'Время прибытия', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
     ],
     'Менеджер по персоналу': [
@@ -142,7 +154,8 @@ post_tables = {
             'col_headings': ['Название должности', 'Оклад', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
         # TODO tabno fio
         {
@@ -154,7 +167,8 @@ post_tables = {
                              'Пол', 'СНИЛС', 'ИНН', 'Дата приема', 'Дата увольнения', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': True
         },
         # TODO tabno fio
         {
@@ -166,7 +180,8 @@ post_tables = {
                              'Пол', 'СНИЛС', 'ИНН', 'Дата приема', 'Дата увольнения', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': True
         },
         {
             'name': 'machinist_workload',
@@ -175,7 +190,8 @@ post_tables = {
             'col_headings': ['Номер маршрута', 'Машинист', 'Дата', 'Номер поезда'],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': False
         },
         {
             'name': 'tickets_stat',
@@ -184,7 +200,8 @@ post_tables = {
             'col_headings': ['Тариф', 'Количество', 'Общая выручка', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': False
         },
     ],
     'Машинист': [
@@ -195,7 +212,8 @@ post_tables = {
             'col_headings': ['Дата', 'Поезд', 'Номер маршрута', 'Тип', 'Остановки', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': False
         },
         # TODO date
         {
@@ -205,7 +223,8 @@ post_tables = {
             'col_headings': ['Дата', 'Номер поезда', 'Номер маршрута', 'Тариф', 'Остановки', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': True
         },
     ],
     'Директор депо': [
@@ -216,7 +235,8 @@ post_tables = {
             'col_headings': ['Модель', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
         {
             'name': 'trains',
@@ -225,7 +245,8 @@ post_tables = {
             'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
         {
             'name': 'active_trains',
@@ -234,7 +255,8 @@ post_tables = {
             'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
         # TODO tabno fio
         {
@@ -246,7 +268,8 @@ post_tables = {
                              'Пол', 'СНИЛС', 'ИНН', 'Дата приема', 'Дата увольнения', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': True
         },
         {
             'name': 'active_machinists',
@@ -257,7 +280,8 @@ post_tables = {
                              'Пол', 'СНИЛС', 'ИНН', 'Дата приема', 'Дата увольнения', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': True
         },
     ],
     'Менеджер направлений': [
@@ -268,7 +292,8 @@ post_tables = {
             'col_headings': ['Название', 'Базовая стоимость', 'Заведующий', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
         {
             'name': 'tariffs',
@@ -277,7 +302,8 @@ post_tables = {
             'col_headings': ['Название', 'Множитель стоимости', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
         {
             'name': 'trains',
@@ -286,7 +312,8 @@ post_tables = {
             'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': False
         },
         {
             'name': 'active_trains',
@@ -295,7 +322,8 @@ post_tables = {
             'col_headings': ['ID', 'Модель', 'Введен в эксплуатацию', 'Списан', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': False
         },
         # TODO tabno fio
         {
@@ -307,7 +335,8 @@ post_tables = {
                              'Пол', 'СНИЛС', 'ИНН', 'Дата приема', 'Дата увольнения', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': True
         },
         {
             'name': 'active_machinists',
@@ -318,7 +347,8 @@ post_tables = {
                              'Пол', 'СНИЛС', 'ИНН', 'Дата приема', 'Дата увольнения', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': False
         },
         {
             'name': 'routes',
@@ -327,7 +357,8 @@ post_tables = {
             'col_headings': ['ID', 'Направление', 'Тип', 'Режим движения', 'Сторона', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
         # TODO date
         {
@@ -337,7 +368,8 @@ post_tables = {
             'col_headings': ['ID', 'Дата', 'Номер маршрута', 'Поезд', 'Номер машиниста'],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': True
         },
         {
             'name': 'stations',
@@ -346,7 +378,8 @@ post_tables = {
             'col_headings': ['id', 'Название', 'Приг. зона', 'Километр', 'Направление'],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
         {
             'name': 'tickets_stat',
@@ -355,7 +388,8 @@ post_tables = {
             'col_headings': ['Тариф', 'Количество', 'Общая выручка', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': False
         },
         # TODO date stops
         {
@@ -365,7 +399,8 @@ post_tables = {
             'col_headings': ['Дата', 'Номер поезда', 'Номер маршрута', 'Тариф', 'Остановки', ],
             'CREATE': False,
             'UPDATE': False,
-            'DELETE': False
+            'DELETE': False,
+            'SEARCH': True
         },
         {
             'name': 'route_stations',
@@ -374,7 +409,8 @@ post_tables = {
             'col_headings': ['Станция', 'Маршрут', 'Время прибытия', ],
             'CREATE': True,
             'UPDATE': True,
-            'DELETE': True
+            'DELETE': True,
+            'SEARCH': False
         },
     ],
 }
