@@ -79,7 +79,58 @@ class SQLTreeView(ttk.Treeview):
         self.read_records()
 
     def search_records(self, event=None):
-        ScheduleSearch(self, self.table).show()
+        if self.table['name'] in ('rides_verbose', 'rides'):
+            input_data = ScheduleSearch(self, self.table).show()
+            if input_data and input_data != ['', '']:
+                if not input_data[0]:
+                    records = self.db.execute(text(f"SELECT * FROM {self.table['name']} WHERE ddate < :input_date"),
+                                               input_date=input_data[1]).fetchall()
+                elif not input_data[1]:
+                    records = self.db.execute(text(f"SELECT * FROM {self.table['name']} WHERE ddate > :input_date"),
+                                               input_date=input_data[0]).fetchall()
+                else:
+                    records = self.db.execute(
+                        text(f"SELECT * FROM {self.table['name']} WHERE ddate BETWEEN (:from_date, :to_date)"),
+                        from_date=input_data[0], to_date=input_data[1]).fetchall()
+                [self.delete(i) for i in self.get_children()]
+                [self.insert('', 'end', values=list(row)) for row in records]
+        elif self.table['name'] == 'tickets':
+            input_data = TicketsSearch(self, self.table).show()
+            if input_data and input_data != ['', '']:
+                if not input_data[0]:
+                    records = self.db.execute(text("SELECT tick.* FROM tickets AS tick, stations AS st WHERE "
+                                                   "tick.arrive_st = st.id AND st.name LIKE :pattern"),
+                                               pattern=f'%{input_data[1]}%').fetchall()
+                elif not input_data[1]:
+                    records = self.db.execute(text("SELECT tick.* FROM tickets AS tick, stations AS st WHERE "
+                                                   "tick.depart_st = st.id AND st.name LIKE :pattern"),
+                                               pattern=f'%{input_data[0]}%').fetchall()
+                else:
+                    records = self.db.execute(text("SELECT tick.* FROM (SELECT tick2.* FROM tickets "
+                                                   "AS tick2, stations AS st2 WHERE tick2.depart_st = st2.id "
+                                                   "AND st2.name LIKE :pattern1) AS tick, stations AS st WHERE "
+                                                   "(tick.arrive_st = st.id AND st.name LIKE :pattern2)"),
+                                               pattern1=f'%{input_data[0]}%', pattern2=f'%{input_data[1]}%').fetchall()
+                [self.delete(i) for i in self.get_children()]
+                [self.insert('', 'end', values=list(row)) for row in records]
+        elif self.table['name'] in ('machinists', 'employees', 'active_staff', 'active_machinists'):
+            input_data = EmployeeSearch(self, self.table).show()
+            if input_data and input_data != ['', '']:
+                if not input_data[0]:
+                    records = self.db.execute(text(f"SELECT * FROM {self.table['name']} WHERE "
+                                                   "first_name || '' || last_name || '' || patronymic LIKE :data"),
+                                              data=f'%{input_data[1]}%').fetchall()
+                elif not input_data[1]:
+                    records = self.db.execute(text(f"SELECT * FROM {self.table['name']} WHERE "
+                                                   "tabno = :data"), data=input_data[0]).fetchall()
+                else:
+                    records = self.db.execute(text(f"SELECT * FROM {self.table['name']} WHERE "
+                                                   "first_name || '' || last_name || '' || patronymic LIKE :data2 AND "
+                                                   "tabno = :data1"), data1=input_data[0],
+                                                   data2=f'%{input_data[1]}%').fetchall()
+                [self.delete(i) for i in self.get_children()]
+                [self.insert('', 'end', values=list(row)) for row in records]
+
 
 
 class SQLNotebook(ttk.Notebook):
@@ -110,7 +161,7 @@ class SQLNotebook(ttk.Notebook):
             table.configure(yscrollcommand=scroll_y.set, xscrollcommand=scroll_x.set)
             table.bind("<<TreeviewSelect>>", self.on_tree_select)
         self.init_notebook()
-        
+
     def init_notebook(self):
         for i, table in enumerate(self.tables):
             self.add(self.tabs_frames[i], padding=3)
@@ -145,10 +196,10 @@ class SQLNotebook(ttk.Notebook):
 
     def on_tab_change(self, event):
         self.root.master.children['!mainwindow'].update_btns(self.tables[self.index(self.select())])
-        
+
     def on_tree_select(self, event):
         self.root.master.children['!mainwindow'].update_btns_special(self.tables[self.index(self.select())])
-        cur_item = self.tabs_tables [self.index(self.select())].focus()
+        cur_item = self.tabs_tables[self.index(self.select())].focus()
         self.selected_row_values = self.tabs_tables[self.index(self.select())].item(cur_item)['values']
 
 
@@ -224,12 +275,14 @@ class MainWindow(tk.Frame):
         self.btn_create['state'] = perm_map[permissions['CREATE']]
         self.btn_update['state'] = 'disabled'
         self.btn_delete['state'] = perm_map[permissions['DELETE']]
-        
+        self.btn_search['state'] = perm_map[permissions['SEARCH']]
+
     def update_btns_special(self, permissions):
         perm_map = {True: 'normal', False: 'disabled'}
         self.btn_create['state'] = perm_map[permissions['CREATE']]
         self.btn_update['state'] = perm_map[permissions['UPDATE']]
         self.btn_delete['state'] = perm_map[permissions['DELETE']]
+        self.btn_search['state'] = perm_map[permissions['SEARCH']]
 
     def connect(self):
         """ Connect to a DB with the given logpass like {'login': str, 'password': str} """
@@ -374,7 +427,7 @@ class CreateDialog(ModalWindow):
                                          validate='key')
                 if heading == 'Остановки':
                     self.Edits[i].config(state='disabled')
-                elif heading in ('Кассир', 'Стоимость'):
+                elif heading in ('Кассир', 'Стоимость') or (heading == 'Дата' and self.table['heading'] == 'Билеты'):
                     self.Edits[i].config(state='disabled')
                     self.retDict[self.table['col_headings'][i]].set('0')
 
@@ -428,7 +481,7 @@ class UpdateDialog(ModalWindow):
         self.Edits[i] = ttk.Combobox(self, textvariable=self.retDict[table['col_headings'][i]])
         self.Edits[i]['values'] = [item[0] for item in self.root.db.execute(f"SELECT {column} FROM {tab}").fetchall()]
         self.Edits[i].set(self.selected_row_values[i])
-        
+
     def init_pass(self):
         self.title('Введите значения')
         x = str(self.root.winfo_screenwidth() // 2 - 150)
@@ -510,15 +563,16 @@ class UpdateDialog(ModalWindow):
 
     def on_ok(self, event=None):
         try:
-            self.root.db.execute(text(f'UPDATE {self.table["name"]} SET {self.create_set_part()} WHERE {self.table["columns"][0]} = :id'),
-                               id=self.selected_row_values[0])
+            self.root.db.execute(text(
+                f'UPDATE {self.table["name"]} SET {self.create_set_part()} WHERE {self.table["columns"][0]} = :id'),
+                                 id=self.selected_row_values[0])
         except exc.SQLAlchemyError as err:
             messagebox.showerror(title='Ошибка', message=err.orig)
         self.on_exit()
 
     def show(self):
         self.wait_window()
-        
+
     def create_set_part(self):
         input_data = [x.get().split(', ')[-1] for x in list(self.retDict.values())]
         for i in range(1, len(input_data)):
@@ -568,26 +622,106 @@ class ScheduleSearch(ModalWindow):
         self.bind('<Return>', self.on_ok)
 
     def on_exit(self, event=None):
-        self.retDict = None
+        self.retDict = []
         self.destroy()
 
     def on_ok(self, event=None):
-        input_data = [value.get() for key, value in self.retDict.items()]
-        if input_data:
-            if not input_data[0]:
-                print(self.root.db.execute(text("SELECT * FROM rides_verbose WHERE ddate < :input_date"),
-                                     input_date=input_data[1]).fetchall())
-            elif not input_data[1]:
-                print(self.root.db.execute(text("SELECT * FROM rides_verbose WHERE ddate > :input_date"),
-                                     input_date=input_data[0]).fetchall())
-            else:
-                print(self.root.db.execute(text("SELECT * FROM rides_verbose WHERE ddate BETWEEN (:from_date, :to_date)"),
-                                     from_date=input_data[0], to_date=input_data[1]).fetchall())
-        self.on_exit()
-
+        self.retDict = [value.get() for key, value in self.retDict.items()]
+        self.destroy()
 
     def show(self):
         self.wait_window()
+        return self.retDict
+
+
+class TicketsSearch(ModalWindow):
+    """ Search window for tickets """
+
+    def __init__(self, root, table):
+        super().__init__(root)
+        self.retDict = {'from': tk.StringVar(), 'to': tk.StringVar()}
+        self.table = table
+        self.init_pass()
+        self.protocol('WM_DELETE_WINDOW', self.on_exit)
+
+    def init_pass(self):
+        self.title("Поиск по станциям")
+
+        label_from = tk.Label(self, text='Поиск по станциям')
+        label_from.place(x=self.window_width // 2, y=20, anchor='center')
+
+        label_to = tk.Label(self, text='Станция отправления:')
+        label_to.place(x=self.window_width // 2, y=80, anchor='e')
+
+        self.entry_from = tk.Entry(self, textvariable=self.retDict['from'])
+        self.entry_from.place(x=self.window_width // 2, y=80, anchor='w')
+
+        label_pass = tk.Label(self, text='Станция прибытия:')
+        label_pass.place(x=self.window_width // 2, y=110, anchor='e')
+
+        self.entry_to = tk.Entry(self, textvariable=self.retDict['to'])
+        self.entry_to.place(x=self.window_width // 2, y=110, anchor='w')
+
+        self.ok_button = tk.Button(self, text='OK', command=self.on_ok)
+        self.ok_button.place(x=self.window_width // 2, y=150, anchor='center')
+        self.bind('<Return>', self.on_ok)
+
+    def on_exit(self, event=None):
+        self.retDict = []
+        self.destroy()
+
+    def on_ok(self, event=None):
+        self.retDict = [value.get() for key, value in self.retDict.items()]
+        self.destroy()
+
+    def show(self):
+        self.wait_window()
+        return self.retDict
+
+
+class EmployeeSearch(ModalWindow):
+    """ Search window for employees """
+
+    def __init__(self, root, table):
+        super().__init__(root)
+        self.retDict = {'from': tk.StringVar(), 'to': tk.StringVar()}
+        self.table = table
+        self.init_pass()
+        self.protocol('WM_DELETE_WINDOW', self.on_exit)
+
+    def init_pass(self):
+        self.title("Поиск по персоналу")
+
+        label_from = tk.Label(self, text='Поиск по персоналу')
+        label_from.place(x=self.window_width // 2, y=20, anchor='center')
+
+        label_to = tk.Label(self, text='Табельный номер:')
+        label_to.place(x=self.window_width // 2, y=80, anchor='e')
+
+        self.entry_from = tk.Entry(self, textvariable=self.retDict['from'])
+        self.entry_from.place(x=self.window_width // 2, y=80, anchor='w')
+
+        label_pass = tk.Label(self, text='ФИО:')
+        label_pass.place(x=self.window_width // 2, y=110, anchor='e')
+
+        self.entry_to = tk.Entry(self, textvariable=self.retDict['to'])
+        self.entry_to.place(x=self.window_width // 2, y=110, anchor='w')
+
+        self.ok_button = tk.Button(self, text='OK', command=self.on_ok)
+        self.ok_button.place(x=self.window_width // 2, y=150, anchor='center')
+        self.bind('<Return>', self.on_ok)
+
+    def on_exit(self, event=None):
+        self.retDict = []
+        self.destroy()
+
+    def on_ok(self, event=None):
+        self.retDict = [value.get() for key, value in self.retDict.items()]
+        self.destroy()
+
+    def show(self):
+        self.wait_window()
+        return self.retDict
 
 
 class AuthDialog(ModalWindow):

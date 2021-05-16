@@ -13,7 +13,6 @@ post_tables = {
     #     ...
     # ],
     # ...
-    # TODO search date
     'Кассир': [
         {
             'name': 'rides_verbose',
@@ -25,7 +24,6 @@ post_tables = {
             'DELETE': False,
             'SEARCH': True
         },
-        # TODO search station
         {
             'name': 'tickets',
             'heading': 'Билеты',
@@ -58,7 +56,6 @@ post_tables = {
             'DELETE': False,
             'SEARCH': False
         },
-        # TODO search tabno fio
         {
             'name': 'machinists',
             'heading': 'Машинисты',
@@ -93,7 +90,6 @@ post_tables = {
             'DELETE': True,
             'SEARCH': False
         },
-        # TODO date machinist
         {
             'name': 'rides',
             'heading': 'Рейсы',
@@ -124,7 +120,6 @@ post_tables = {
             'DELETE': False,
             'SEARCH': False
         },
-        # TODO date
         {
             'name': 'rides_verbose',
             'heading': 'Расписание',
@@ -157,7 +152,6 @@ post_tables = {
             'DELETE': True,
             'SEARCH': False
         },
-        # TODO tabno fio
         {
             'name': 'employees',
             'heading': 'Сотрудники',
@@ -170,7 +164,6 @@ post_tables = {
             'DELETE': True,
             'SEARCH': True
         },
-        # TODO tabno fio
         {
             'name': 'active_staff',
             'heading': 'Активный штат',
@@ -215,7 +208,6 @@ post_tables = {
             'DELETE': False,
             'SEARCH': False
         },
-        # TODO date
         {
             'name': 'rides_verbose',
             'heading': 'Расписание',
@@ -258,7 +250,6 @@ post_tables = {
             'DELETE': True,
             'SEARCH': False
         },
-        # TODO tabno fio
         {
             'name': 'machinists',
             'heading': 'Машинисты',
@@ -325,7 +316,6 @@ post_tables = {
             'DELETE': False,
             'SEARCH': False
         },
-        # TODO tabno fio
         {
             'name': 'machinists',
             'heading': 'Машинисты',
@@ -360,7 +350,6 @@ post_tables = {
             'DELETE': True,
             'SEARCH': False
         },
-        # TODO date
         {
             'name': 'rides',
             'heading': 'Рейсы',
@@ -391,7 +380,6 @@ post_tables = {
             'DELETE': False,
             'SEARCH': False
         },
-        # TODO date stops
         {
             'name': 'rides_verbose',
             'heading': 'Расписание',
