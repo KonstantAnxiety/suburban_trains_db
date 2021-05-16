@@ -492,16 +492,15 @@ BEGIN
         RAISE EXCEPTION 'Не удалось внести изменения: маршрут не содержит станций';
     END IF;
     SELECT routes.wdays INTO STRICT wdays FROM routes WHERE id = new.route;
-    CASE wdays
-        WHEN 'по рабочим' THEN
-            IF EXTRACT(dow FROM new.ddate) NOT IN (1, 2, 3, 4, 5) THEN
-                RAISE EXCEPTION 'День недели не соответствует режиму движения: %', wdays;
-            END IF;
-        WHEN 'по выходным' THEN
-            IF EXTRACT(dow FROM new.ddate) NOT IN (6, 0) THEN
-                RAISE EXCEPTION 'День недели не соответствует режиму движения: %', wdays;
-            END IF;
-    END CASE;
+    IF wdays = 'по рабочим' THEN
+        IF EXTRACT(dow FROM new.ddate) NOT IN (1, 2, 3, 4, 5) THEN
+            RAISE EXCEPTION 'День недели не соответствует режиму движения: %', wdays;
+        END IF;
+    ELSIF wdays = 'по выходным' THEN
+        IF EXTRACT(dow FROM new.ddate) NOT IN (6, 0) THEN
+            RAISE EXCEPTION 'День недели не соответствует режиму движения: %', wdays;
+        END IF;
+    END IF;
     IF EXISTS (SELECT * FROM rides WHERE id <> new.id AND
                    (machinist = new.machinist OR train = new.train) AND
                    (new.ddate BETWEEN ddate AND ride_end(route, ddate) OR
